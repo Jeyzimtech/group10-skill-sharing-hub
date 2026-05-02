@@ -59,8 +59,21 @@ class _CustomButtonState extends State<CustomButton>
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    final buttonColor =
-        isDisabled ? Colors.grey.shade400 : const Color(0xFF2E7D32);
+    
+    // Determine colors based on text to match the new design
+    Color bgColor;
+    Color textColor;
+    
+    if (widget.text.toUpperCase() == 'REGISTER' || 
+        widget.text.toUpperCase() == 'SIGN UP' ||
+        widget.text.toUpperCase() == 'LOGIN' || 
+        widget.text.toUpperCase() == 'SIGN IN') {
+      bgColor = const Color(0xFFE0E0E0); // Light gray
+      textColor = const Color(0xFF37474F);
+    } else {
+      bgColor = isDisabled ? Colors.grey.shade400 : const Color(0xFF2E7D32);
+      textColor = Colors.white;
+    }
 
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -71,41 +84,41 @@ class _CustomButtonState extends State<CustomButton>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          height: 56,
-          width: widget.isLoading ? 56 : double.infinity,
+          height: 52,
+          width: widget.isLoading ? 52 : double.infinity,
           decoration: BoxDecoration(
-            color: buttonColor,
-            borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 16),
+            color: bgColor,
+            borderRadius: BorderRadius.circular(4),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     )
                   ],
           ),
           alignment: Alignment.center,
           child: widget.isLoading
               ? const SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 20,
+                  height: 20,
                   child: CircularProgressIndicator(
                     color: Colors.white,
-                    strokeWidth: 3,
+                    strokeWidth: 2,
                   ),
                 )
               : AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: Text(
-                    widget.text,
+                    widget.text.toUpperCase(),
                     key: ValueKey(widget.text),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
                     ),
                   ),
                 ),

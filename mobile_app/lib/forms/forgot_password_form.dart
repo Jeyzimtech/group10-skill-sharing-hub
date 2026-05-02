@@ -131,12 +131,12 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm>
         ),
         const SizedBox(height: 32),
         const Text(
-          'Check your email',
+          'CHECK YOUR EMAIL',
           style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF1B1B1B),
-            letterSpacing: -0.5,
+            fontSize: 20,
+            fontWeight: FontWeight.w300,
+            color: Colors.white,
+            letterSpacing: 4.0,
           ),
         ),
         const SizedBox(height: 16),
@@ -184,24 +184,29 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm>
         const SizedBox(height: 24),
         _buildAnimatedItem(
           0,
-          const Text(
-            'Reset Password',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF1B1B1B),
-              letterSpacing: -0.5,
+          const Center(
+            child: Text(
+              'RESET PASSWORD',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w300,
+                color: Colors.white,
+                letterSpacing: 4.0,
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         _buildAnimatedItem(
           1,
-          Text(
-            'Enter your email to receive recovery instructions',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey.shade600,
+          Center(
+            child: Text(
+              'Enter your email to receive recovery instructions',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withOpacity(0.5),
+              ),
             ),
           ),
         ),

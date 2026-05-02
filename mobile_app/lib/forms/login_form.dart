@@ -111,24 +111,40 @@ class _LoginFormState extends State<LoginForm>
         children: [
           _buildAnimatedItem(
             0,
-            const Text(
-              'Welcome Back',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF1B1B1B),
-                letterSpacing: -0.5,
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 35,
+                  backgroundColor: const Color(0xFF1B2838),
+                  child: Icon(
+                    Icons.person,
+                    size: 40,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
           _buildAnimatedItem(
-            1,
-            Text(
-              'Sign in to continue your learning journey',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade600,
+            0,
+            const Center(
+              child: Text(
+                'MEMBER LOGIN',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  letterSpacing: 4.0,
+                ),
               ),
             ),
           ),
@@ -167,19 +183,30 @@ class _LoginFormState extends State<LoginForm>
           _buildAnimatedItem(
             4,
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.center,
               child: TextButton(
                 onPressed: widget.onForgotPasswordTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white.withOpacity(0.6),
                   padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Forgot Password? '),
+                      TextSpan(
+                        text: 'Click Here',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -197,24 +224,22 @@ class _LoginFormState extends State<LoginForm>
           const SizedBox(height: 24),
           _buildAnimatedItem(
             4,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Don't have an account? ",
-                  style: TextStyle(color: Colors.grey.shade600),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: widget.onRegisterTap,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFE0E0E0),
                 ),
-                GestureDetector(
-                  onTap: widget.onRegisterTap,
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      color: Color(0xFF2E7D32),
-                      fontWeight: FontWeight.bold,
-                    ),
+                child: const Text(
+                  'CREATE NEW ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],

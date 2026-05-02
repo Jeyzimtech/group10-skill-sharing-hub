@@ -83,15 +83,12 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+              color: const Color(0xFF1B2838).withOpacity(0.6),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: hasError ? Colors.red : Colors.white.withOpacity(0.05),
+                width: 1,
+              ),
             ),
             child: TextField(
               obscureText: _obscureText,
@@ -99,49 +96,29 @@ class _CustomTextFieldState extends State<CustomTextField>
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
               style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF333333),
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+                letterSpacing: 0.5,
               ),
               decoration: InputDecoration(
-                labelText: widget.label,
-                labelStyle: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 15,
+                hintText: widget.label,
+                hintStyle: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 14,
                 ),
-                floatingLabelStyle: TextStyle(
-                  color: activeColor,
-                  fontWeight: FontWeight.w600,
-                ),
-                prefixIcon: Icon(
-                  widget.icon,
-                  color: hasError
-                      ? activeColor
-                      : widget.isSuccess
-                          ? activeColor
-                          : Colors.grey.shade500,
+                prefixIcon: Container(
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    widget.icon,
+                    size: 18,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
                 ),
                 suffixIcon: _buildSuffixIcon(activeColor),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: activeColor,
-                    width: 2,
-                  ),
-                ),
+                border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
                   vertical: 18,
                 ),
               ),
@@ -149,7 +126,7 @@ class _CustomTextFieldState extends State<CustomTextField>
           ),
           if (hasError)
             Padding(
-              padding: const EdgeInsets.only(left: 12, top: 6),
+              padding: const EdgeInsets.only(left: 4, top: 6),
               child: Text(
                 widget.errorText!,
                 style: const TextStyle(

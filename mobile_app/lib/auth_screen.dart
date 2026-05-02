@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'forms/login_form.dart';
@@ -24,21 +25,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     super.initState();
     _modeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 800),
     );
     _forgotController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 700),
     );
 
+    // Silky smooth transitions
     _modeAnimation = CurvedAnimation(
       parent: _modeController,
-      curve: Curves.easeOutBack, // Soft spring finish
+      curve: Curves.easeInOutQuart,
     );
 
     _forgotAnimation = CurvedAnimation(
       parent: _forgotController,
-      curve: Curves.easeOutBack,
+      curve: Curves.easeInOutQuart,
     );
   }
 
@@ -68,10 +70,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // Handle keyboard manually or use scrolling
+      resizeToAvoidBottomInset: false,
+      backgroundColor: const Color(0xFF0F172A), // Dark base
       body: Stack(
         children: [
-          _buildBackground(),
+          _buildNexusBackground(),
           AnimatedBuilder(
             animation: Listenable.merge([_modeController, _forgotController]),
             builder: (context, child) {
@@ -89,88 +92,93 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBackground() {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return AnimatedBuilder(
-      animation: Listenable.merge([_modeController, _forgotController]),
-      builder: (context, child) {
-        double modeVal = _modeAnimation.value;
-        double forgotVal = _forgotAnimation.value;
-
-        // Background moves opposite to forms.
-        // Forms move left (-offset) -> Background moves right (+offset)
-        double offset = (modeVal * screenWidth * 0.3) + (forgotVal * screenWidth * 0.3);
-
-        return Positioned(
-          left: -screenWidth * 0.5,
-          top: 0,
-          bottom: 0,
-          width: screenWidth * 2.0,
-          child: Transform.translate(
-            offset: Offset(offset, 0),
-            child: child,
-          ),
-        );
-      },
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2E7D32), Color(0xFF66BB6A), Color(0xFF2E7D32)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+  Widget _buildNexusBackground() {
+    return Stack(
+      children: [
+        // Main gradient
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0.5, -0.5),
+              radius: 1.5,
+              colors: [
+                Color(0xFF1E293B),
+                Color(0xFF0F172A),
+              ],
+            ),
           ),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -50,
-              left: 50,
-              child: _buildAbstractShape(200, 0.1),
-            ),
-            Positioned(
-              bottom: 100,
-              right: 150,
-              child: _buildAbstractShape(350, 0.08),
-            ),
-            Positioned(
-              top: 300,
-              left: 300,
-              child: _buildAbstractShape(150, 0.12),
-            ),
-          ],
+        // Geometric Nexus
+        Positioned.fill(
+          child: CustomPaint(
+            painter: NexusPainter(),
+          ),
         ),
-      ),
+        // Soft Glows
+        Positioned(
+          top: -100,
+          right: -100,
+          child: _buildGlow(300, const Color(0xFF0D9488).withOpacity(0.15)),
+        ),
+        Positioned(
+          bottom: -150,
+          left: -150,
+          child: _buildGlow(400, const Color(0xFF0F172A).withOpacity(0.3)),
+        ),
+      ],
     );
   }
 
-  Widget _buildAbstractShape(double size, double opacity) {
+  Widget _buildGlow(double size, Color color) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(opacity),
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            blurRadius: 100,
+            spreadRadius: 50,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildWhiteCard({required Widget child}) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 40,
-            offset: const Offset(0, 15),
+  Widget _buildGlassCard({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.85,
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF2DD4BF).withOpacity(0.2),
+                const Color(0xFF134E4A).withOpacity(0.4),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 30,
+                offset: const Offset(0, 20),
+              ),
+            ],
           ),
-        ],
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 
@@ -179,38 +187,28 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     double forgotValue = _forgotAnimation.value;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    double slideOffset = -(value * screenWidth) - (forgotValue * screenWidth);
-    
-    double scale = lerpDouble(1.0, 0.95, value)!;
-    scale = lerpDouble(scale, 0.95, forgotValue)!;
-    
-    double opacity = lerpDouble(1.0, 0.0, value)!;
-    opacity = lerpDouble(opacity, 0.0, forgotValue)!;
+    double slideOffset = -(value * screenWidth * 1.1) - (forgotValue * screenWidth * 1.1);
+    double opacity = (1.0 - (value * 1.5)).clamp(0.0, 1.0);
+    opacity = (opacity - (forgotValue * 1.5)).clamp(0.0, 1.0);
 
     return Transform.translate(
       offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value > 0.5 || forgotValue > 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: LoginForm(
-                        onRegisterTap: _switchToRegister,
-                        onForgotPasswordTap: _switchToForgotPassword,
-                      ),
-                    ),
+      child: Opacity(
+        opacity: opacity,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            children: [
+              Center(
+                child: _buildGlassCard(
+                  child: LoginForm(
+                    onRegisterTap: _switchToRegister,
+                    onForgotPasswordTap: _switchToForgotPassword,
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -221,33 +219,26 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     double value = _modeAnimation.value;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    double slideOffset = (1 - value) * screenWidth;
-    double scale = lerpDouble(0.95, 1.0, value)!;
-    double opacity = lerpDouble(0.0, 1.0, value)!;
+    double slideOffset = (1.0 - value) * screenWidth * 1.1;
+    double opacity = (value * 1.5 - 0.5).clamp(0.0, 1.0);
 
     return Transform.translate(
       offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value < 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: RegisterForm(
-                        onLoginTap: _switchToLogin,
-                      ),
-                    ),
+      child: Opacity(
+        opacity: opacity,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            children: [
+              Center(
+                child: _buildGlassCard(
+                  child: RegisterForm(
+                    onLoginTap: _switchToLogin,
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -258,36 +249,79 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     double value = _forgotAnimation.value;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    double slideOffset = (1 - value) * screenWidth;
-    double scale = lerpDouble(0.95, 1.0, value)!;
-    double opacity = lerpDouble(0.0, 1.0, value)!;
+    double slideOffset = (1.0 - value) * screenWidth * 1.1;
+    double opacity = (value * 1.5 - 0.5).clamp(0.0, 1.0);
 
     return Transform.translate(
       offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value < 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: ForgotPasswordForm(
-                        onBackTap: _switchToLogin,
-                      ),
-                    ),
+      child: Opacity(
+        opacity: opacity,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            children: [
+              Center(
+                child: _buildGlassCard(
+                  child: ForgotPasswordForm(
+                    onBackTap: _switchToLogin,
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+class NexusPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF2DD4BF).withOpacity(0.1)
+      ..strokeWidth = 1.0;
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFF2DD4BF).withOpacity(0.3)
+      ..style = PaintingStyle.fill;
+
+    final random = Random(42); // Fixed seed for stability
+    final points = List.generate(35, (index) {
+      return Offset(
+        random.nextDouble() * size.width,
+        random.nextDouble() * size.height,
+      );
+    });
+
+    for (var i = 0; i < points.length; i++) {
+      for (var j = i + 1; j < points.length; j++) {
+        final distance = (points[i] - points[j]).distance;
+        if (distance < 120) {
+          // Draw Line
+          paint.color = const Color(0xFF2DD4BF).withOpacity((1 - distance / 120) * 0.1);
+          canvas.drawLine(points[i], points[j], paint);
+          
+          // Draw semi-transparent triangle if a 3rd point is close
+          for (var k = j + 1; k < points.length; k++) {
+            final dist2 = (points[i] - points[k]).distance;
+            final dist3 = (points[j] - points[k]).distance;
+            if (dist2 < 120 && dist3 < 120) {
+              final path = Path()
+                ..moveTo(points[i].dx, points[i].dy)
+                ..lineTo(points[j].dx, points[j].dy)
+                ..lineTo(points[k].dx, points[k].dy)
+                ..close();
+              canvas.drawPath(path, Paint()..color = const Color(0xFF2DD4BF).withOpacity(0.03));
+            }
+          }
+        }
+      }
+      canvas.drawCircle(points[i], 1.5, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

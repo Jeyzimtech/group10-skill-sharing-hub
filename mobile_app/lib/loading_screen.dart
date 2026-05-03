@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'auth_screen.dart';
+import 'utils/app_colors.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -43,6 +44,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const AuthScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // Ultra-premium smooth entry
               const curve = Curves.fastLinearToSlowEaseIn;
               
               var fadeAnimation = CurvedAnimation(
@@ -78,7 +80,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
                 child: child,
               );
             },
-            transitionDuration: const Duration(milliseconds: 2000),
+            transitionDuration: const Duration(milliseconds: 2000), // 2 seconds for ultra-smoothness
           ),
         );
       }
@@ -95,7 +97,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           _buildBackground(),
@@ -172,7 +174,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           width: 40,
           height: 2,
           decoration: BoxDecoration(
-            color: const Color(0xFF2DD4BF).withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -180,7 +182,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
         const Text(
           'CONNECTING MINDS',
           style: TextStyle(
-            color: Color(0xFF2DD4BF),
+            color: AppColors.primary,
             fontSize: 10,
             fontWeight: FontWeight.w600,
             letterSpacing: 4,
@@ -191,14 +193,34 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
   }
 
   Widget _buildBackground() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.2,
-          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.2,
+              colors: [AppColors.surface, AppColors.background],
+            ),
+          ),
         ),
-      ),
+        // Soft white center glow
+        Center(
+          child: Container(
+            width: 600,
+            height: 600,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.accentWhite.withValues(alpha: 0.05),
+                  AppColors.accentWhite.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -210,18 +232,18 @@ class NodeNetworkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.4)
+      ..color = AppColors.primary.withValues(alpha: 0.4)
       ..strokeWidth = 1.2;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF)
+      ..color = AppColors.primary
       ..style = PaintingStyle.fill;
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2.5;
 
     final points = <Offset>[];
-    const int count = 14; 
+    const int count = 14; // Slightly more nodes for density
     for (var i = 0; i < count; i++) {
       final phi = acos(-1 + (2 * i) / count);
       final theta = sqrt(count * pi) * phi;
@@ -235,7 +257,8 @@ class NodeNetworkPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < radius * 1.6) {
           final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
-          paint.color = const Color(0xFF2DD4BF).withOpacity(opacity * 0.3);
+          final color = i % 3 == 0 ? AppColors.secondary : AppColors.primary;
+          paint.color = color.withValues(alpha: opacity * 0.3);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

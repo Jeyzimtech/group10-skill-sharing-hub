@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/app_colors.dart';
 
 class CustomButton extends StatefulWidget {
   final String text;
@@ -59,7 +60,9 @@ class _CustomButtonState extends State<CustomButton>
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    final textColor = const Color(0xFF0F172A); 
+    
+    // Updated to always use dark navy text for the silver button to match Image 3
+    final textColor = AppColors.background; 
 
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -83,15 +86,15 @@ class _CustomButtonState extends State<CustomButton>
                       Color(0xFFF0F0F0),
                       Color(0xFFE2E2E2),
                     ],
-                    stops: [0.0, 0.4, 1.0],
+                    stops: [0.0, 0.4, 1.0], // Metallic highlight
                   ),
-            color: isDisabled ? Colors.grey.shade400.withOpacity(0.5) : null,
+            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
             borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       blurRadius: 25,
                       spreadRadius: -5,
                       offset: const Offset(0, 12),
@@ -117,7 +120,7 @@ class _CustomButtonState extends State<CustomButton>
                       color: textColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 3.5,
+                      letterSpacing: 3.5, // Even wider for that premium look
                     ),
                   ),
                 ),

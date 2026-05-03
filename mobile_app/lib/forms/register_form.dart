@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
+import '../services/auth_service.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -29,6 +30,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
   String? _studentNumberError;
   String? _passwordError;
   String? _confirmPasswordError;
+  String? _serverError;
   bool _isLoading = false;
 
   @override
@@ -82,9 +84,23 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
     }
     if (!_isValid) return;
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isLoading = false);
+    setState(() { _isLoading = true; _serverError = null; });
+    try {
+      await AuthService.register(
+        name: _name,
+        email: _email,
+        dob: _dob,
+        studentNumber: _studentNumber,
+        password: _password,
+      );
+      // TODO: navigate to home screen after successful registration
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _serverError = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _serverError = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override

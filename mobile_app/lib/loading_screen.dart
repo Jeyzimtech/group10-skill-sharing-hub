@@ -43,7 +43,6 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const AuthScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // Ultra-premium smooth entry
               const curve = Curves.fastLinearToSlowEaseIn;
               
               var fadeAnimation = CurvedAnimation(
@@ -79,7 +78,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
                 child: child,
               );
             },
-            transitionDuration: const Duration(milliseconds: 2000), // 2 seconds for ultra-smoothness
+            transitionDuration: const Duration(milliseconds: 2000),
           ),
         );
       }
@@ -173,7 +172,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           width: 40,
           height: 2,
           decoration: BoxDecoration(
-            color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
+            color: const Color(0xFF2DD4BF).withOpacity(0.3),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -211,7 +210,7 @@ class NodeNetworkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.4)
+      ..color = const Color(0xFF2DD4BF).withOpacity(0.4)
       ..strokeWidth = 1.2;
 
     final dotPaint = Paint()
@@ -222,7 +221,7 @@ class NodeNetworkPainter extends CustomPainter {
     final radius = size.width / 2.5;
 
     final points = <Offset>[];
-    const int count = 14; // Slightly more nodes for density
+    const int count = 14; 
     for (var i = 0; i < count; i++) {
       final phi = acos(-1 + (2 * i) / count);
       final theta = sqrt(count * pi) * phi;
@@ -236,7 +235,7 @@ class NodeNetworkPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < radius * 1.6) {
           final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
-          paint.color = const Color(0xFF2DD4BF).withValues(alpha: opacity * 0.3);
+          paint.color = const Color(0xFF2DD4BF).withOpacity(opacity * 0.3);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
-import '../services/auth_service.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   final VoidCallback onBackTap;
@@ -19,7 +18,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   String _email = '';
   String? _emailError;
-  String? _serverError;
   bool _isLoading = false;
   bool _isSuccess = false;
 
@@ -52,19 +50,13 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
     _validate();
     if (_emailError != null || !_isValid) return;
 
-    setState(() { _isLoading = true; _serverError = null; });
-    try {
-      await AuthService.forgotPassword(_email);
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _isSuccess = true;
-        });
-      }
-    } on AuthException catch (e) {
-      if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
-    } catch (_) {
-      if (mounted) setState(() { _isLoading = false; _serverError = 'Something went wrong. Please try again.'; });
+    setState(() => _isLoading = true);
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _isSuccess = true;
+      });
     }
   }
 
@@ -88,7 +80,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9).withOpacity(0.1),
+            color: const Color(0xFFE8F5E9).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -102,18 +94,18 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           'CHECK YOUR EMAIL',
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w300,
             color: Colors.white,
-            letterSpacing: 2,
+            letterSpacing: 4.0,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'We have sent recovery instructions to\n$_email',
+          'We have sent password recovery instructions to your email.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             height: 1.5,
           ),
         ),
@@ -166,7 +158,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -190,16 +182,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           isLoading: _isLoading,
           onPressed: _isValid ? _submit : null,
         ),
-        if (_serverError != null) ...[
-          const SizedBox(height: 12),
-          Center(
-            child: Text(
-              _serverError!,
-              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
       ],
     );
   }

@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'auth_screen.dart';
-import 'services/auth_service.dart';
+import 'loading_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
   ]);
-  final token = await AuthService.getToken();
-  runApp(SkillSharingApp(isAuthenticated: token != null));
+
+  runApp(const SkillSharingApp());
 }
 
 class SkillSharingApp extends StatelessWidget {
-  final bool isAuthenticated;
-  const SkillSharingApp({super.key, required this.isAuthenticated});
+  const SkillSharingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +20,16 @@ class SkillSharingApp extends StatelessWidget {
       title: 'Skill Sharing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Inter',
-        scaffoldBackgroundColor: const Color(0xFFF7F9F7),
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF2DD4BF),
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF2DD4BF),
+          surface: Color(0xFF1E293B),
+        ),
+        fontFamily: 'Roboto',
       ),
-      // TODO: replace Placeholder with your actual home screen widget
-      home: isAuthenticated ? const Placeholder() : const AuthScreen(),
+      home: const LoadingScreen(),
     );
   }
 }

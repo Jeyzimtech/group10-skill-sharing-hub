@@ -6,6 +6,8 @@ import 'forms/login_form.dart';
 import 'forms/register_form.dart';
 import 'forms/forgot_password_form.dart';
 
+enum AuthMode { login, register, forgotPassword }
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -14,165 +16,222 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
-  late AnimationController _modeController;
+  late AnimationController _flipController;
   late AnimationController _forgotController;
-
-  late Animation<double> _modeAnimation;
+  
+  late Animation<double> _flipAnimation;
   late Animation<double> _forgotAnimation;
+  
+  AuthMode _mode = AuthMode.login;
+  bool _showRegisterSide = false;
+  bool _showForgotSide = false;
 
   @override
   void initState() {
     super.initState();
-    _modeController = AnimationController(
+    _flipController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+
     _forgotController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 800),
     );
 
-    // Silky smooth transitions
-    _modeAnimation = CurvedAnimation(
-      parent: _modeController,
-      curve: Curves.easeInOutQuart,
+    _flipAnimation = Tween<double>(begin: 0, end: pi).animate(
+      CurvedAnimation(
+        parent: _flipController,
+        curve: Curves.easeInOutCubic,
+      ),
     );
 
-    _forgotAnimation = CurvedAnimation(
-      parent: _forgotController,
-      curve: Curves.easeInOutQuart,
+    _forgotAnimation = Tween<double>(begin: 0, end: pi).animate(
+      CurvedAnimation(
+        parent: _forgotController,
+        curve: Curves.easeInOutCubic,
+      ),
     );
+
+    _flipController.addListener(() {
+      if (_flipController.value > 0.5) {
+        if (!_showRegisterSide) {
+          setState(() {
+            _showRegisterSide = true;
+          });
+        }
+      } else {
+        if (_showRegisterSide) {
+          setState(() {
+            _showRegisterSide = false;
+          });
+        }
+      }
+    });
+
+    _forgotController.addListener(() {
+      if (_forgotController.value > 0.5) {
+        if (!_showForgotSide) {
+          setState(() {
+            _showForgotSide = true;
+          });
+        }
+      } else {
+        if (_showForgotSide) {
+          setState(() {
+            _showForgotSide = false;
+          });
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
-    _modeController.dispose();
+    _flipController.dispose();
     _forgotController.dispose();
     super.dispose();
   }
 
-  void _switchToRegister() {
-    _modeController.forward();
-  }
-
-  void _switchToLogin() {
-    if (_forgotController.value > 0) {
-      _forgotController.reverse();
+  void _toggleFlip() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    
+    if (_mode == AuthMode.login) {
+      _mode = AuthMode.register;
+      _flipController.forward();
     } else {
-      _modeController.reverse();
+      _mode = AuthMode.login;
+      _flipController.reverse();
     }
   }
 
   void _switchToForgotPassword() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    _mode = AuthMode.forgotPassword;
     _forgotController.forward();
+  }
+
+  void _backFromForgot() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    _mode = AuthMode.login;
+    _forgotController.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF0F172A), // Dark base
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
           _buildNexusBackground(),
-          AnimatedBuilder(
-            animation: Listenable.merge([_modeController, _forgotController]),
-            builder: (context, child) {
-              return Stack(
-                children: [
-                  _buildLoginFormContainer(),
-                  if (_modeController.value > 0) _buildRegisterFormContainer(),
-                  if (_forgotController.value > 0) _buildForgotPasswordFormContainer(),
-                ],
-              );
-            },
-          ),
+          _buildMainContainer(),
         ],
       ),
     );
   }
 
-  Widget _buildNexusBackground() {
-    return Stack(
-      children: [
-        // Main gradient
-        Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.5, -0.5),
-              radius: 1.5,
-              colors: [
-                Color(0xFF1E293B),
-                Color(0xFF0F172A),
-              ],
-            ),
-          ),
-        ),
-        // Geometric Nexus
-        Positioned.fill(
-          child: CustomPaint(
-            painter: NexusPainter(),
-          ),
-        ),
-        // Soft Glows
-        Positioned(
-          top: -100,
-          right: -100,
-          child: _buildGlow(300, const Color(0xFF0D9488).withOpacity(0.15)),
-        ),
-        Positioned(
-          bottom: -150,
-          left: -150,
-          child: _buildGlow(400, const Color(0xFF0F172A).withOpacity(0.3)),
-        ),
-      ],
-    );
-  }
+  Widget _buildMainContainer() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth * 0.92;
 
-  Widget _buildGlow(double size, Color color) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color,
-            blurRadius: 100,
-            spreadRadius: 50,
-          ),
-        ],
+    return Center(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_flipAnimation, _forgotAnimation]),
+        builder: (context, child) {
+          final flipAngle = _flipAnimation.value;
+          final forgotAngle = _forgotAnimation.value;
+          
+          // Determine which axis to rotate on
+          // If we are doing forgot password, use X axis rotation (Vertical Flip)
+          // If we are doing register, use Y axis rotation (Horizontal Flip)
+          
+          Matrix4 transform = Matrix4.identity()..setEntry(3, 2, 0.001);
+          
+          if (forgotAngle > 0) {
+            transform.rotateX(forgotAngle);
+          } else {
+            transform.rotateY(flipAngle);
+          }
+
+          return Transform(
+            transform: transform,
+            alignment: Alignment.center,
+            child: _getCurrentSide(cardWidth),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildGlassCard({required Widget child}) {
+  Widget _getCurrentSide(double cardWidth) {
+    if (_showForgotSide) {
+      // Back side of X-axis flip
+      return Transform(
+        transform: Matrix4.identity()..rotateX(pi),
+        alignment: Alignment.center,
+        child: _buildGlassCard(
+          width: cardWidth,
+          child: ForgotPasswordForm(onBackTap: _backFromForgot),
+        ),
+      );
+    }
+    
+    if (_showRegisterSide) {
+      // Back side of Y-axis flip
+      return Transform(
+        transform: Matrix4.identity()..rotateY(pi),
+        alignment: Alignment.center,
+        child: _buildGlassCard(
+          width: cardWidth,
+          child: RegisterForm(onLoginTap: _toggleFlip),
+        ),
+      );
+    }
+
+    // Front side (Login)
+    return _buildGlassCard(
+      width: cardWidth,
+      child: LoginForm(
+        onRegisterTap: _toggleFlip,
+        onForgotPasswordTap: _switchToForgotPassword,
+      ),
+    );
+  }
+
+  Widget _buildGlassCard({required double width, required Widget child}) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.symmetric(vertical: 40),
+          width: width,
+          padding: const EdgeInsets.fromLTRB(10, 30, 10, 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF2DD4BF).withOpacity(0.2),
-                const Color(0xFF134E4A).withOpacity(0.4),
+                const Color(0xFF2DD4BF).withValues(alpha: 0.12),
+                const Color(0xFF0F172A).withValues(alpha: 0.4),
               ],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1.5,
+              color: const Color(0xFF2DD4BF).withValues(alpha: 0.2),
+              width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 30,
-                offset: const Offset(0, 20),
+                color: Colors.white.withValues(alpha: 0.05),
+                blurRadius: 0,
+                offset: const Offset(0, -1),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 50,
+                spreadRadius: -10,
+                offset: const Offset(0, 30),
               ),
             ],
           ),
@@ -182,96 +241,24 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildLoginFormContainer() {
-    double value = _modeAnimation.value;
-    double forgotValue = _forgotAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = -(value * screenWidth * 1.1) - (forgotValue * screenWidth * 1.1);
-    double opacity = (1.0 - (value * 1.5)).clamp(0.0, 1.0);
-    opacity = (opacity - (forgotValue * 1.5)).clamp(0.0, 1.0);
-
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Opacity(
-        opacity: opacity,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            children: [
-              Center(
-                child: _buildGlassCard(
-                  child: LoginForm(
-                    onRegisterTap: _switchToRegister,
-                    onForgotPasswordTap: _switchToForgotPassword,
-                  ),
-                ),
-              ),
-            ],
+  Widget _buildNexusBackground() {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0.5, -0.5),
+              radius: 1.5,
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRegisterFormContainer() {
-    double value = _modeAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = (1.0 - value) * screenWidth * 1.1;
-    double opacity = (value * 1.5 - 0.5).clamp(0.0, 1.0);
-
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Opacity(
-        opacity: opacity,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            children: [
-              Center(
-                child: _buildGlassCard(
-                  child: RegisterForm(
-                    onLoginTap: _switchToLogin,
-                  ),
-                ),
-              ),
-            ],
+        Positioned.fill(
+          child: CustomPaint(
+            painter: NexusPainter(),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildForgotPasswordFormContainer() {
-    double value = _forgotAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = (1.0 - value) * screenWidth * 1.1;
-    double opacity = (value * 1.5 - 0.5).clamp(0.0, 1.0);
-
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Opacity(
-        opacity: opacity,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            children: [
-              Center(
-                child: _buildGlassCard(
-                  child: ForgotPasswordForm(
-                    onBackTap: _switchToLogin,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      ],
     );
   }
 }
@@ -280,45 +267,29 @@ class NexusPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.1)
-      ..strokeWidth = 1.0;
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.08)
+      ..strokeWidth = 0.8;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.3)
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.2)
       ..style = PaintingStyle.fill;
 
-    final random = Random(42); // Fixed seed for stability
-    final points = List.generate(35, (index) {
-      return Offset(
-        random.nextDouble() * size.width,
-        random.nextDouble() * size.height,
-      );
-    });
+    final points = [
+      const Offset(50, 100), const Offset(150, 50), const Offset(250, 150),
+      const Offset(100, 300), const Offset(300, 400), const Offset(50, 500),
+      const Offset(200, 600), const Offset(350, 200), const Offset(100, 700),
+      const Offset(300, 800),
+    ];
 
     for (var i = 0; i < points.length; i++) {
       for (var j = i + 1; j < points.length; j++) {
         final distance = (points[i] - points[j]).distance;
-        if (distance < 120) {
-          // Draw Line
-          paint.color = const Color(0xFF2DD4BF).withOpacity((1 - distance / 120) * 0.1);
+        if (distance < 250) {
+          paint.color = const Color(0xFF2DD4BF).withValues(alpha: (1 - distance / 250) * 0.1);
           canvas.drawLine(points[i], points[j], paint);
-          
-          // Draw semi-transparent triangle if a 3rd point is close
-          for (var k = j + 1; k < points.length; k++) {
-            final dist2 = (points[i] - points[k]).distance;
-            final dist3 = (points[j] - points[k]).distance;
-            if (dist2 < 120 && dist3 < 120) {
-              final path = Path()
-                ..moveTo(points[i].dx, points[i].dy)
-                ..lineTo(points[j].dx, points[j].dy)
-                ..lineTo(points[k].dx, points[k].dy)
-                ..close();
-              canvas.drawPath(path, Paint()..color = const Color(0xFF2DD4BF).withOpacity(0.03));
-            }
-          }
         }
       }
-      canvas.drawCircle(points[i], 1.5, dotPaint);
+      canvas.drawCircle(points[i], 1.2, dotPaint);
     }
   }
 

@@ -142,6 +142,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           final flipAngle = _flipAnimation.value;
           final forgotAngle = _forgotAnimation.value;
           
+          // Determine which axis to rotate on
+          // If we are doing forgot password, use X axis rotation (Vertical Flip)
+          // If we are doing register, use Y axis rotation (Horizontal Flip)
+          
           Matrix4 transform = Matrix4.identity()..setEntry(3, 2, 0.001);
           
           if (forgotAngle > 0) {
@@ -162,6 +166,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   Widget _getCurrentSide(double cardWidth) {
     if (_showForgotSide) {
+      // Back side of X-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateX(pi),
         alignment: Alignment.center,
@@ -173,6 +178,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     }
     
     if (_showRegisterSide) {
+      // Back side of Y-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateY(pi),
         alignment: Alignment.center,
@@ -183,6 +189,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       );
     }
 
+    // Front side (Login)
     return _buildGlassCard(
       width: cardWidth,
       child: LoginForm(

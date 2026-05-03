@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 
@@ -11,66 +11,85 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateMixin {
-  late AnimationController _rotationController;
+  late AnimationController _rotateController;
   late AnimationController _textController;
+  late Animation<int> _typewriterAnimation;
   
-  final String _message = "WELCOME TO THE SKILL SHARING HUB";
-  String _displayedText = "";
-  int _charIndex = 0;
-  Timer? _typeTimer;
+  final String _fullText = 'WELCOME TO THE\nSKILL SHARING HUB';
 
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
+    
+    _rotateController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 20),
+      duration: const Duration(seconds: 10), // Even slower rotation
     )..repeat();
 
     _textController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 3000), // Smoother typing
     );
 
-    _startTypewriter();
-    
-    // Smooth transition to AuthScreen after 4.5 seconds
-    Future.delayed(const Duration(milliseconds: 4500), () {
+    _typewriterAnimation = IntTween(begin: 0, end: _fullText.length).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.linear),
+    );
+
+    _textController.forward();
+
+    Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const AuthScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: CurvedAnimation(parent: animation, curve: Curves.easeInCirc),
+              // Ultra-premium smooth entry
+              const curve = Curves.fastLinearToSlowEaseIn;
+              
+              var fadeAnimation = CurvedAnimation(
+                parent: animation, 
+                curve: const Interval(0.0, 0.6, curve: Curves.easeIn)
+              );
+              
+              var scaleAnimation = Tween<double>(begin: 1.05, end: 1.0).animate(
+                CurvedAnimation(parent: animation, curve: curve)
+              );
+
+              var blurAnimation = Tween<double>(begin: 10.0, end: 0.0).animate(
+                CurvedAnimation(parent: animation, curve: curve)
+              );
+
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return ImageFiltered(
+                    imageFilter: ImageFilter.blur(
+                      sigmaX: blurAnimation.value,
+                      sigmaY: blurAnimation.value,
+                    ),
+                    child: FadeTransition(
+                      opacity: fadeAnimation,
+                      child: ScaleTransition(
+                        scale: scaleAnimation,
+                        child: child,
+                      ),
+                    ),
+                  );
+                },
                 child: child,
               );
             },
-            transitionDuration: const Duration(milliseconds: 1200),
+            transitionDuration: const Duration(milliseconds: 2000), // 2 seconds for ultra-smoothness
           ),
         );
       }
     });
   }
 
-  void _startTypewriter() {
-    _typeTimer = Timer.periodic(const Duration(milliseconds: 60), (timer) {
-      if (_charIndex < _message.length) {
-        setState(() {
-          _displayedText += _message[_charIndex];
-          _charIndex++;
-        });
-      } else {
-        _typeTimer?.cancel();
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _rotationController.dispose();
+    _rotateController.dispose();
     _textController.dispose();
-    _typeTimer?.cancel();
     super.dispose();
   }
 
@@ -80,40 +99,14 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          // Rotating 3D Node Network
-          AnimatedBuilder(
-            animation: _rotationController,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: NodeNetworkPainter(_rotationController.value),
-                size: Size.infinite,
-              );
-            },
-          ),
-          
-          // Branding & Loading Text
+          _buildBackground(),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(flex: 4),
-                _buildPulseRing(),
-                const SizedBox(height: 60),
-                SizedBox(
-                  height: 30,
-                  child: Text(
-                    _displayedText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: 4.0,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildProgressBar(),
-                const Spacer(flex: 3),
+                _buildSkillNetwork3D(),
+                const SizedBox(height: 80),
+                _buildTypewriterText(),
               ],
             ),
           ),
@@ -122,20 +115,21 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildPulseRing() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 2000),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF2DD4BF).withValues(alpha: (1 - value) * 0.5),
-              width: 2.0 + (value * 10),
+  Widget _buildSkillNetwork3D() {
+    return AnimatedBuilder(
+      animation: _rotateController,
+      builder: (context, child) {
+        return Transform(
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.001)
+            ..rotateY(_rotateController.value * 2 * pi)
+            ..rotateX(_rotateController.value * pi / 6),
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: 220,
+            height: 220,
+            child: CustomPaint(
+              painter: NodeNetworkPainter(_rotateController.value),
             ),
           ),
         );
@@ -143,86 +137,111 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildProgressBar() {
-    return Container(
-      width: 200,
-      height: 2,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(1),
-      ),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 4000),
-        builder: (context, value, child) {
-          return FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: value,
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF2DD4BF),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.5),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
+  Widget _buildTypewriterText() {
+    return AnimatedBuilder(
+      animation: _typewriterAnimation,
+      builder: (context, child) {
+        String displayedText = _fullText.substring(0, _typewriterAnimation.value);
+        return Column(
+          children: [
+            SizedBox(
+              height: 60,
+              child: Text(
+                displayedText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w200,
+                  letterSpacing: 4,
+                  height: 1.5,
+                ),
               ),
             ),
-          );
-        },
+            const SizedBox(height: 20),
+            _buildConnectivityIndicator(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildConnectivityIndicator() {
+    return Column(
+      children: [
+        Container(
+          width: 40,
+          height: 2,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(1),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'CONNECTING MINDS',
+          style: TextStyle(
+            color: Color(0xFF2DD4BF),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackground() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.center,
+          radius: 1.2,
+          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+        ),
       ),
     );
   }
 }
 
 class NodeNetworkPainter extends CustomPainter {
-  final double rotation;
-  NodeNetworkPainter(this.rotation);
+  final double animationValue;
+  NodeNetworkPainter(this.animationValue);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.15)
-      ..strokeWidth = 0.5;
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.4)
+      ..strokeWidth = 1.2;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.4)
+      ..color = const Color(0xFF2DD4BF)
       ..style = PaintingStyle.fill;
 
-    final List<Map<String, double>> points3d = [];
-    final random = Random(42);
-    for (int i = 0; i < 40; i++) {
-      points3d.add({
-        'x': (random.nextDouble() - 0.5) * 800,
-        'y': (random.nextDouble() - 0.5) * 800,
-        'z': (random.nextDouble() - 0.5) * 800,
-      });
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2.5;
+
+    final points = <Offset>[];
+    const int count = 14; // Slightly more nodes for density
+    for (var i = 0; i < count; i++) {
+      final phi = acos(-1 + (2 * i) / count);
+      final theta = sqrt(count * pi) * phi;
+      final x = center.dx + radius * sin(phi) * cos(theta);
+      final y = center.dy + radius * sin(phi) * sin(theta);
+      points.add(Offset(x, y));
     }
 
-    final double angle = rotation * 2 * pi;
-    final List<Offset> points2d = [];
-
-    for (var p in points3d) {
-      double x = p['x']! * cos(angle) - p['z']! * sin(angle);
-      double z = p['x']! * sin(angle) + p['z']! * cos(angle);
-      double y = p['y']!;
-
-      double perspective = 1000 / (1000 + z);
-      points2d.add(Offset(center.dx + x * perspective, center.dy + y * perspective));
-    }
-
-    for (int i = 0; i < points2d.length; i++) {
-      for (int j = i + 1; j < points2d.length; j++) {
-        final dist = (points2d[i] - points2d[j]).distance;
-        if (dist < 180) {
-          paint.color = const Color(0xFF2DD4BF).withValues(alpha: (1 - dist / 180) * 0.1);
-          canvas.drawLine(points2d[i], points2d[j], paint);
+    for (var i = 0; i < points.length; i++) {
+      for (var j = i + 1; j < points.length; j++) {
+        final distance = (points[i] - points[j]).distance;
+        if (distance < radius * 1.6) {
+          final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
+          paint.color = const Color(0xFF2DD4BF).withValues(alpha: opacity * 0.3);
+          canvas.drawLine(points[i], points[j], paint);
         }
       }
-      canvas.drawCircle(points2d[i], 1.5, dotPaint);
+      final pulse = sin(animationValue * 2 * pi + i) * 0.5 + 0.5;
+      canvas.drawCircle(points[i], 2.5 + pulse * 1.5, dotPaint);
     }
   }
 

@@ -3,7 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'loading_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
   runApp(const MyApp());
 }
 

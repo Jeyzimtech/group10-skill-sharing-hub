@@ -83,10 +83,10 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF1B2838).withOpacity(0.6),
+              color: const Color(0xFF0B121A).withValues(alpha: 0.9), // Even darker for better block contrast
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: hasError ? Colors.red : Colors.white.withOpacity(0.05),
+                color: hasError ? Colors.red : Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -95,8 +95,9 @@ class _CustomTextFieldState extends State<CustomTextField>
               onChanged: widget.onChanged,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
+              cursorColor: const Color(0xFF2DD4BF),
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.w400,
                 color: Colors.white,
                 letterSpacing: 0.5,
@@ -104,22 +105,19 @@ class _CustomTextFieldState extends State<CustomTextField>
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
-                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  fontSize: 15,
                 ),
-                prefixIcon: Container(
-                  margin: const EdgeInsets.all(12),
-                  padding: const EdgeInsets.all(4),
-                  child: Icon(
-                    widget.icon,
-                    size: 18,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
+                prefixIcon: Icon(
+                  widget.icon,
+                  size: 20,
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
                 suffixIcon: _buildSuffixIcon(activeColor),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
-                  vertical: 18,
+                  vertical: 16,
+                  horizontal: 16,
                 ),
               ),
             ),

@@ -13,8 +13,8 @@ void main() async {
   runApp(const SkillSharingApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SkillSharingApp extends StatelessWidget {
+  const SkillSharingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +25,11 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primaryColor: const Color(0xFF2DD4BF),
         scaffoldBackgroundColor: const Color(0xFF0F172A),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF2DD4BF),
-          surface: Color(0xFF1E293B),
+        fontFamily: 'Inter',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2DD4BF),
+          brightness: Brightness.dark,
         ),
-        fontFamily: 'Roboto',
       ),
       home: const LoadingScreen(),
     );

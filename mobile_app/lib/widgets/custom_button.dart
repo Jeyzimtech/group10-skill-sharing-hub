@@ -1,24 +1,64 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends StatelessWidget {
+class CustomButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final Color? color;
 
   const CustomButton({
+    super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
-    this.color,
-    super.key,
   });
+
+  @override
+  State<CustomButton> createState() => _CustomButtonState();
+}
+
+class _CustomButtonState extends State<CustomButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    if (widget.onPressed != null && !widget.isLoading) {
+      _scaleController.forward();
+    }
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    if (widget.onPressed != null && !widget.isLoading) {
+      _scaleController.reverse();
+      widget.onPressed!();
+    }
+  }
+
+  void _onTapCancel() {
+    _scaleController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    
-    // Updated to always use dark navy text for the silver button to match Image 3
     final textColor = const Color(0xFF0F172A); 
 
     return GestureDetector(
@@ -43,15 +83,15 @@ class CustomButton extends StatelessWidget {
                       Color(0xFFF0F0F0),
                       Color(0xFFE2E2E2),
                     ],
-                    stops: [0.0, 0.4, 1.0], // Metallic highlight
+                    stops: [0.0, 0.4, 1.0],
                   ),
-            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
+            color: isDisabled ? Colors.grey.shade400.withOpacity(0.5) : null,
             borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
+                      color: Colors.black.withOpacity(0.4),
                       blurRadius: 25,
                       spreadRadius: -5,
                       offset: const Offset(0, 12),
@@ -77,41 +117,11 @@ class CustomButton extends StatelessWidget {
                       color: textColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 3.5, // Even wider for that premium look
+                      letterSpacing: 3.5,
                     ),
                   ),
                 ),
-              ]
-            : [],
-      ),
-      child: ElevatedButton(
-        onPressed: isEnabled ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: EdgeInsets.zero,
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.0,
-                ),
-              ),
       ),
     );
   }

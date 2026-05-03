@@ -199,7 +199,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
               child: TextButton(
                 onPressed: widget.onLoginTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.8),
+                  foregroundColor: Colors.white.withOpacity(0.8),
                 ),
                 child: const Text(
                   'ALREADY REGISTERED? SIGN IN',

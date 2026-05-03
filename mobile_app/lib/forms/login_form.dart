@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
+import '../services/auth_service.dart';
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
@@ -27,6 +28,7 @@ class _LoginFormState extends State<LoginForm>
   String _password = '';
   String? _emailError;
   String? _passwordError;
+  String? _serverError;
   bool _isLoading = false;
 
   @override
@@ -96,9 +98,17 @@ class _LoginFormState extends State<LoginForm>
     if (_emailError != null || _passwordError != null) return;
     if (!_isValid) return;
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isLoading = false);
+    setState(() { _isLoading = true; _serverError = null; });
+    try {
+      await AuthService.login(_email, _password);
+      // TODO: navigate to home screen after successful login
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _serverError = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _serverError = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -212,6 +222,16 @@ class _LoginFormState extends State<LoginForm>
               ),
             ),
           ),
+          if (_serverError != null) ...[  
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                _serverError!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
           const SizedBox(height: 32),
           _buildAnimatedItem(
             4,

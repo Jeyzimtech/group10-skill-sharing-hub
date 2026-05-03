@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'auth_screen.dart';
+import 'loading_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,11 +20,16 @@ class SkillSharingApp extends StatelessWidget {
       title: 'Skill Sharing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Inter',
-        scaffoldBackgroundColor: const Color(0xFFF7F9F7),
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF2DD4BF),
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF2DD4BF),
+          surface: Color(0xFF1E293B),
+        ),
+        fontFamily: 'Roboto',
       ),
-      home: const AuthScreen(),
+      home: const LoadingScreen(),
     );
   }
 }

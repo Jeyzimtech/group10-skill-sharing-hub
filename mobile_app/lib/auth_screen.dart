@@ -1,9 +1,12 @@
 import 'dart:ui';
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'forms/login_form.dart';
 import 'forms/register_form.dart';
 import 'forms/forgot_password_form.dart';
+
+enum AuthMode { login, register, forgotPassword }
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -13,281 +16,283 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
-  late AnimationController _modeController;
+  late AnimationController _flipController;
   late AnimationController _forgotController;
-
-  late Animation<double> _modeAnimation;
+  
+  late Animation<double> _flipAnimation;
   late Animation<double> _forgotAnimation;
+  
+  AuthMode _mode = AuthMode.login;
+  bool _showRegisterSide = false;
+  bool _showForgotSide = false;
 
   @override
   void initState() {
     super.initState();
-    _modeController = AnimationController(
+    _flipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 800),
     );
+
     _forgotController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
     );
 
-    _modeAnimation = CurvedAnimation(
-      parent: _modeController,
-      curve: Curves.easeOutBack, // Soft spring finish
+    _flipAnimation = Tween<double>(begin: 0, end: pi).animate(
+      CurvedAnimation(
+        parent: _flipController,
+        curve: Curves.easeInOutCubic,
+      ),
     );
 
-    _forgotAnimation = CurvedAnimation(
-      parent: _forgotController,
-      curve: Curves.easeOutBack,
+    _forgotAnimation = Tween<double>(begin: 0, end: pi).animate(
+      CurvedAnimation(
+        parent: _forgotController,
+        curve: Curves.easeInOutCubic,
+      ),
     );
+
+    _flipController.addListener(() {
+      if (_flipController.value > 0.5) {
+        if (!_showRegisterSide) {
+          setState(() {
+            _showRegisterSide = true;
+          });
+        }
+      } else {
+        if (_showRegisterSide) {
+          setState(() {
+            _showRegisterSide = false;
+          });
+        }
+      }
+    });
+
+    _forgotController.addListener(() {
+      if (_forgotController.value > 0.5) {
+        if (!_showForgotSide) {
+          setState(() {
+            _showForgotSide = true;
+          });
+        }
+      } else {
+        if (_showForgotSide) {
+          setState(() {
+            _showForgotSide = false;
+          });
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
-    _modeController.dispose();
+    _flipController.dispose();
     _forgotController.dispose();
     super.dispose();
   }
 
-  void _switchToRegister() {
-    _modeController.forward();
-  }
-
-  void _switchToLogin() {
-    if (_forgotController.value > 0) {
-      _forgotController.reverse();
+  void _toggleFlip() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    
+    if (_mode == AuthMode.login) {
+      _mode = AuthMode.register;
+      _flipController.forward();
     } else {
-      _modeController.reverse();
+      _mode = AuthMode.login;
+      _flipController.reverse();
     }
   }
 
   void _switchToForgotPassword() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    _mode = AuthMode.forgotPassword;
     _forgotController.forward();
+  }
+
+  void _backFromForgot() {
+    if (_flipController.isAnimating || _forgotController.isAnimating) return;
+    _mode = AuthMode.login;
+    _forgotController.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // Handle keyboard manually or use scrolling
+      resizeToAvoidBottomInset: false,
+      backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
-          _buildBackground(),
-          AnimatedBuilder(
-            animation: Listenable.merge([_modeController, _forgotController]),
-            builder: (context, child) {
-              return Stack(
-                children: [
-                  _buildLoginFormContainer(),
-                  if (_modeController.value > 0) _buildRegisterFormContainer(),
-                  if (_forgotController.value > 0) _buildForgotPasswordFormContainer(),
-                ],
-              );
-            },
-          ),
+          _buildNexusBackground(),
+          _buildMainContainer(),
         ],
       ),
     );
   }
 
-  Widget _buildBackground() {
+  Widget _buildMainContainer() {
     final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth * 0.92;
 
-    return AnimatedBuilder(
-      animation: Listenable.merge([_modeController, _forgotController]),
-      builder: (context, child) {
-        double modeVal = _modeAnimation.value;
-        double forgotVal = _forgotAnimation.value;
+    return Center(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_flipAnimation, _forgotAnimation]),
+        builder: (context, child) {
+          final flipAngle = _flipAnimation.value;
+          final forgotAngle = _forgotAnimation.value;
+          
+          // Determine which axis to rotate on
+          // If we are doing forgot password, use X axis rotation (Vertical Flip)
+          // If we are doing register, use Y axis rotation (Horizontal Flip)
+          
+          Matrix4 transform = Matrix4.identity()..setEntry(3, 2, 0.001);
+          
+          if (forgotAngle > 0) {
+            transform.rotateX(forgotAngle);
+          } else {
+            transform.rotateY(flipAngle);
+          }
 
-        // Background moves opposite to forms.
-        // Forms move left (-offset) -> Background moves right (+offset)
-        double offset = (modeVal * screenWidth * 0.3) + (forgotVal * screenWidth * 0.3);
+          return Transform(
+            transform: transform,
+            alignment: Alignment.center,
+            child: _getCurrentSide(cardWidth),
+          );
+        },
+      ),
+    );
+  }
 
-        return Positioned(
-          left: -screenWidth * 0.5,
-          top: 0,
-          bottom: 0,
-          width: screenWidth * 2.0,
-          child: Transform.translate(
-            offset: Offset(offset, 0),
-            child: child,
-          ),
-        );
-      },
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2E7D32), Color(0xFF66BB6A), Color(0xFF2E7D32)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+  Widget _getCurrentSide(double cardWidth) {
+    if (_showForgotSide) {
+      // Back side of X-axis flip
+      return Transform(
+        transform: Matrix4.identity()..rotateX(pi),
+        alignment: Alignment.center,
+        child: _buildGlassCard(
+          width: cardWidth,
+          child: ForgotPasswordForm(onBackTap: _backFromForgot),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -50,
-              left: 50,
-              child: _buildAbstractShape(200, 0.1),
-            ),
-            Positioned(
-              bottom: 100,
-              right: 150,
-              child: _buildAbstractShape(350, 0.08),
-            ),
-            Positioned(
-              top: 300,
-              left: 300,
-              child: _buildAbstractShape(150, 0.12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAbstractShape(double size, double opacity) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withOpacity(opacity),
-      ),
-    );
-  }
-
-  Widget _buildWhiteCard({required Widget child}) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 40,
-            offset: const Offset(0, 15),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildLoginFormContainer() {
-    double value = _modeAnimation.value;
-    double forgotValue = _forgotAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = -(value * screenWidth) - (forgotValue * screenWidth);
+      );
+    }
     
-    double scale = lerpDouble(1.0, 0.95, value)!;
-    scale = lerpDouble(scale, 0.95, forgotValue)!;
-    
-    double opacity = lerpDouble(1.0, 0.0, value)!;
-    opacity = lerpDouble(opacity, 0.0, forgotValue)!;
+    if (_showRegisterSide) {
+      // Back side of Y-axis flip
+      return Transform(
+        transform: Matrix4.identity()..rotateY(pi),
+        alignment: Alignment.center,
+        child: _buildGlassCard(
+          width: cardWidth,
+          child: RegisterForm(onLoginTap: _toggleFlip),
+        ),
+      );
+    }
 
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value > 0.5 || forgotValue > 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: LoginForm(
-                        onRegisterTap: _switchToRegister,
-                        onForgotPasswordTap: _switchToForgotPassword,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    // Front side (Login)
+    return _buildGlassCard(
+      width: cardWidth,
+      child: LoginForm(
+        onRegisterTap: _toggleFlip,
+        onForgotPasswordTap: _switchToForgotPassword,
+      ),
+    );
+  }
+
+  Widget _buildGlassCard({required double width, required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          width: width,
+          padding: const EdgeInsets.fromLTRB(10, 30, 10, 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF2DD4BF).withValues(alpha: 0.12),
+                const Color(0xFF0F172A).withValues(alpha: 0.4),
+              ],
             ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFF2DD4BF).withValues(alpha: 0.2),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.05),
+                blurRadius: 0,
+                offset: const Offset(0, -1),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 50,
+                spreadRadius: -10,
+                offset: const Offset(0, 30),
+              ),
+            ],
           ),
+          child: child,
         ),
       ),
     );
   }
 
-  Widget _buildRegisterFormContainer() {
-    double value = _modeAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = (1 - value) * screenWidth;
-    double scale = lerpDouble(0.95, 1.0, value)!;
-    double opacity = lerpDouble(0.0, 1.0, value)!;
-
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value < 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: RegisterForm(
-                        onLoginTap: _switchToLogin,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildNexusBackground() {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0.5, -0.5),
+              radius: 1.5,
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildForgotPasswordFormContainer() {
-    double value = _forgotAnimation.value;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    double slideOffset = (1 - value) * screenWidth;
-    double scale = lerpDouble(0.95, 1.0, value)!;
-    double opacity = lerpDouble(0.0, 1.0, value)!;
-
-    return Transform.translate(
-      offset: Offset(slideOffset, 0),
-      child: Transform.scale(
-        scale: scale,
-        child: Opacity(
-          opacity: opacity.clamp(0.0, 1.0),
-          child: IgnorePointer(
-            ignoring: value < 0.5,
-            child: Center(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                children: [
-                  Center(
-                    child: _buildWhiteCard(
-                      child: ForgotPasswordForm(
-                        onBackTap: _switchToLogin,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        Positioned.fill(
+          child: CustomPaint(
+            painter: NexusPainter(),
           ),
         ),
-      ),
+      ],
     );
   }
+}
+
+class NexusPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.08)
+      ..strokeWidth = 0.8;
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.2)
+      ..style = PaintingStyle.fill;
+
+    final points = [
+      const Offset(50, 100), const Offset(150, 50), const Offset(250, 150),
+      const Offset(100, 300), const Offset(300, 400), const Offset(50, 500),
+      const Offset(200, 600), const Offset(350, 200), const Offset(100, 700),
+      const Offset(300, 800),
+    ];
+
+    for (var i = 0; i < points.length; i++) {
+      for (var j = i + 1; j < points.length; j++) {
+        final distance = (points[i] - points[j]).distance;
+        if (distance < 250) {
+          paint.color = const Color(0xFF2DD4BF).withValues(alpha: (1 - distance / 250) * 0.1);
+          canvas.drawLine(points[i], points[j], paint);
+        }
+      }
+      canvas.drawCircle(points[i], 1.2, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

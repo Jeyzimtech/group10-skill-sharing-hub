@@ -59,8 +59,9 @@ class _CustomButtonState extends State<CustomButton>
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    final buttonColor =
-        isDisabled ? Colors.grey.shade400 : const Color(0xFF2E7D32);
+    
+    // Updated to always use dark navy text for the silver button to match Image 3
+    final textColor = const Color(0xFF0F172A); 
 
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -74,25 +75,38 @@ class _CustomButtonState extends State<CustomButton>
           height: 56,
           width: widget.isLoading ? 56 : double.infinity,
           decoration: BoxDecoration(
-            color: buttonColor,
-            borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 16),
+            gradient: isDisabled || widget.isLoading
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFFFFFFF),
+                      Color(0xFFF0F0F0),
+                      Color(0xFFE2E2E2),
+                    ],
+                    stops: [0.0, 0.4, 1.0], // Metallic highlight
+                  ),
+            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
+            borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 25,
+                      spreadRadius: -5,
+                      offset: const Offset(0, 12),
                     )
                   ],
           ),
           alignment: Alignment.center,
           child: widget.isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: textColor,
                     strokeWidth: 3,
                   ),
                 )
@@ -101,11 +115,11 @@ class _CustomButtonState extends State<CustomButton>
                   child: Text(
                     widget.text,
                     key: ValueKey(widget.text),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3.5, // Even wider for that premium look
                     ),
                   ),
                 ),

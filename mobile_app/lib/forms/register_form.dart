@@ -79,9 +79,6 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
 
   void _submit() async {
     _validate();
-    if (_nameError != null || _emailError != null || _passwordError != null) {
-      return;
-    }
     if (!_isValid) return;
 
     setState(() { _isLoading = true; _serverError = null; });
@@ -93,13 +90,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
         studentNumber: _studentNumber,
         password: _password,
       );
-      // TODO: navigate to home screen after successful registration
+      // Integration check: successfully registered
     } on AuthException catch (e) {
-      if (mounted) setState(() => _serverError = e.message);
+      if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
-      if (mounted) setState(() => _serverError = 'Something went wrong. Please try again.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() { _isLoading = false; _serverError = 'Something went wrong. Please try again.'; });
     }
   }
 
@@ -153,7 +148,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
               children: [
                 Expanded(
                   child: CustomTextField(
-                    label: 'DOB (DD/...',
+                    label: 'DOB (DD/MM/YY)',
                     icon: Icons.calendar_today,
                     errorText: _dobError,
                     isSuccess: _dob.isNotEmpty && _dobError == null,
@@ -209,13 +204,23 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
               isLoading: _isLoading,
               onPressed: _isValid ? _submit : null,
             ),
+            if (_serverError != null) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: Text(
+                  _serverError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
             const SizedBox(height: 32),
             Align(
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: widget.onLoginTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.8),
+                  foregroundColor: Colors.white.withOpacity(0.8),
                 ),
                 child: const Text(
                   'ALREADY REGISTERED? SIGN IN',

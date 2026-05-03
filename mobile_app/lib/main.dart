@@ -1,34 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'auth_screen.dart';
-import 'screens/skill_listing_screen.dart';
+import 'package:provider/provider.dart';
+import 'loading_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  runApp(const SkillSharingApp());
+  runApp(const MyApp());
 }
 
-class SkillSharingApp extends StatelessWidget {
-  const SkillSharingApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Skill Sharing',
+      title: 'Skill Sharing Hub',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        brightness: Brightness.dark,
+        primaryColor: const Color(0xFF2DD4BF),
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
         fontFamily: 'Inter',
-        scaffoldBackgroundColor: const Color(0xFFF7F9F7),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2DD4BF),
+          brightness: Brightness.dark,
+        ),
       ),
-      routes: {
-        '/skills': (context) => const SkillListingScreen(),
-      },
-      home: const AuthScreen(),
+      home: const LoadingScreen(),
     );
   }
 }

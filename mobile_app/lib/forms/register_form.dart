@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
+import '../services/auth_service.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
 
-  const RegisterForm({super.key, required this.onLoginTap});
+  const RegisterForm({
+    required this.onLoginTap,
+    super.key,
+  });
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late List<Animation<double>> _fadeAnimations;
-  late List<Animation<Offset>> _slideAnimations;
+class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   String _name = '';
   String _email = '';
@@ -31,53 +33,23 @@ class _RegisterFormState extends State<RegisterForm>
   String? _studentNumberError;
   String? _passwordError;
   String? _confirmPasswordError;
+  String? _serverError;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
+    _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 400),
     );
-
-    _fadeAnimations = List.generate(
-      6,
-      (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _animController,
-          curve: Interval(
-            0.1 * index,
-            0.5 + 0.1 * index,
-            curve: Curves.easeOutCubic,
-          ),
-        ),
-      ),
-    );
-
-    _slideAnimations = List.generate(
-      6,
-      (index) => Tween<Offset>(
-        begin: const Offset(0, 0.2),
-        end: Offset.zero,
-      ).animate(
-        CurvedAnimation(
-          parent: _animController,
-          curve: Interval(
-            0.1 * index,
-            0.5 + 0.1 * index,
-            curve: Curves.easeOutCubic,
-          ),
-        ),
-      ),
-    );
-
-    _animController.forward();
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
-    _animController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
@@ -85,11 +57,11 @@ class _RegisterFormState extends State<RegisterForm>
     setState(() {
       _nameError = _name.isEmpty ? null : Validators.validateName(_name);
       _emailError = _email.isEmpty ? null : Validators.validateEmail(_email);
-      _dobError = _dob.isEmpty ? null : (_dob.length < 5 ? 'Invalid date' : null);
-      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 4 ? 'Invalid number' : null);
+      _dobError = _dob.isEmpty ? null : (_dob.length < 8 ? 'Invalid date' : null);
+      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 5 ? 'Invalid ID' : null);
       _passwordError = _password.isEmpty ? null : Validators.validatePassword(_password);
-      _confirmPasswordError = _confirmPassword.isEmpty 
-          ? null 
+      _confirmPasswordError = _confirmPassword.isEmpty
+          ? null
           : (_confirmPassword != _password ? 'Passwords do not match' : null);
     });
   }
@@ -100,7 +72,7 @@ class _RegisterFormState extends State<RegisterForm>
       _dob.isNotEmpty &&
       _studentNumber.isNotEmpty &&
       _password.isNotEmpty &&
-      _confirmPassword.isNotEmpty &&
+      _confirmPassword == _password &&
       _nameError == null &&
       _emailError == null &&
       _dobError == null &&
@@ -110,69 +82,53 @@ class _RegisterFormState extends State<RegisterForm>
 
   void _submit() async {
     _validate();
-    if (_nameError != null || _emailError != null || _passwordError != null) {
-      return;
-    }
     if (!_isValid) return;
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isLoading = false);
+    setState(() { _isLoading = true; _serverError = null; });
+    try {
+      await AuthService.register(
+        name: _name,
+        email: _email,
+        dob: _dob,
+        studentNumber: _studentNumber,
+        password: _password,
+      );
+      // TODO: navigate to home screen after successful registration
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _serverError = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _serverError = 'Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildAnimatedItem(
-            0,
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 35,
-                  backgroundColor: const Color(0xFF1B2838),
-                  child: Icon(
-                    Icons.person_add_alt_1,
-                    size: 35,
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          _buildAnimatedItem(
-            0,
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
             const Center(
               child: Text(
                 'CREATE ACCOUNT',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w300,
+                  fontWeight: FontWeight.w400,
                   color: Colors.white,
                   letterSpacing: 4.0,
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 40),
-          _buildAnimatedItem(
-            2,
+            const SizedBox(height: 30),
             CustomTextField(
               label: 'Full Name',
-              icon: Icons.person_outline,
+              icon: Icons.person,
               errorText: _nameError,
               isSuccess: _name.isNotEmpty && _nameError == null,
               onChanged: (value) {
@@ -180,13 +136,10 @@ class _RegisterFormState extends State<RegisterForm>
                 _validate();
               },
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildAnimatedItem(
-            3,
+            const SizedBox(height: 16),
             CustomTextField(
               label: 'Email Address',
-              icon: Icons.email_outlined,
+              icon: Icons.mail,
               keyboardType: TextInputType.emailAddress,
               errorText: _emailError,
               isSuccess: _email.isNotEmpty && _emailError == null,
@@ -195,16 +148,13 @@ class _RegisterFormState extends State<RegisterForm>
                 _validate();
               },
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAnimatedItem(
-                  3,
-                  CustomTextField(
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: CustomTextField(
                     label: 'DOB (DD/MM/YY)',
-                    icon: Icons.calendar_today_outlined,
+                    icon: Icons.calendar_today,
                     errorText: _dobError,
                     isSuccess: _dob.isNotEmpty && _dobError == null,
                     onChanged: (value) {
@@ -213,14 +163,11 @@ class _RegisterFormState extends State<RegisterForm>
                     },
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildAnimatedItem(
-                  3,
-                  CustomTextField(
+                const SizedBox(width: 16),
+                Expanded(
+                  child: CustomTextField(
                     label: 'Student ID',
-                    icon: Icons.badge_outlined,
+                    icon: Icons.badge,
                     errorText: _studentNumberError,
                     isSuccess: _studentNumber.isNotEmpty && _studentNumberError == null,
                     onChanged: (value) {
@@ -229,15 +176,12 @@ class _RegisterFormState extends State<RegisterForm>
                     },
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildAnimatedItem(
-            4,
+              ],
+            ),
+            const SizedBox(height: 16),
             CustomTextField(
               label: 'Password',
-              icon: Icons.lock_outline,
+              icon: Icons.lock,
               isPassword: true,
               errorText: _passwordError,
               isSuccess: _password.isNotEmpty && _passwordError == null,
@@ -246,13 +190,10 @@ class _RegisterFormState extends State<RegisterForm>
                 _validate();
               },
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildAnimatedItem(
-            4,
+            const SizedBox(height: 16),
             CustomTextField(
               label: 'Confirm Password',
-              icon: Icons.lock_reset_outlined,
+              icon: Icons.lock,
               isPassword: true,
               textInputAction: TextInputAction.done,
               errorText: _confirmPasswordError,
@@ -262,48 +203,42 @@ class _RegisterFormState extends State<RegisterForm>
                 _validate();
               },
             ),
-          ),
-          const SizedBox(height: 40),
-          _buildAnimatedItem(
-            5,
+            const SizedBox(height: 32),
             CustomButton(
               text: 'SIGN UP',
               isLoading: _isLoading,
               onPressed: _isValid ? _submit : null,
             ),
-          ),
-          const SizedBox(height: 24),
-          _buildAnimatedItem(
-            5,
+            if (_serverError != null) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: Text(
+                  _serverError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+            const SizedBox(height: 32),
             Align(
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: widget.onLoginTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFE0E0E0),
+                  foregroundColor: Colors.white.withValues(alpha: 0.8),
                 ),
                 child: const Text(
                   'ALREADY REGISTERED? SIGN IN',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedItem(int index, Widget child) {
-    return FadeTransition(
-      opacity: _fadeAnimations[index],
-      child: SlideTransition(
-        position: _slideAnimations[index],
-        child: child,
+          ],
+        ),
       ),
     );
   }

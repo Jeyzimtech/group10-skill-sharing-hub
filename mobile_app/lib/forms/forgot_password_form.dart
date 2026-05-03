@@ -7,7 +7,10 @@ import '../services/auth_service.dart';
 class ForgotPasswordForm extends StatefulWidget {
   final VoidCallback onBackTap;
 
-  const ForgotPasswordForm({super.key, required this.onBackTap});
+  const ForgotPasswordForm({
+    required this.onBackTap,
+    super.key,
+  });
 
   @override
   State<ForgotPasswordForm> createState() => _ForgotPasswordFormState();
@@ -76,7 +79,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   Widget _buildSuccessState() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 20),
@@ -97,14 +100,14 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           'CHECK YOUR EMAIL',
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.w300,
+            fontWeight: FontWeight.w600,
             color: Colors.white,
-            letterSpacing: 4.0,
+            letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'We have sent password recovery instructions to your email.',
+          'We have sent recovery instructions to\n$_email',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
@@ -112,11 +115,12 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 40),
         CustomButton(
           text: 'BACK TO LOGIN',
           onPressed: widget.onBackTap,
         ),
+        const SizedBox(height: 20),
       ],
     );
   }

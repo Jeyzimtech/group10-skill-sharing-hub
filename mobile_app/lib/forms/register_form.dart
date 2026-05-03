@@ -7,7 +7,10 @@ import '../services/auth_service.dart';
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
 
-  const RegisterForm({super.key, required this.onLoginTap});
+  const RegisterForm({
+    required this.onLoginTap,
+    super.key,
+  });
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
@@ -54,11 +57,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
     setState(() {
       _nameError = _name.isEmpty ? null : Validators.validateName(_name);
       _emailError = _email.isEmpty ? null : Validators.validateEmail(_email);
-      _dobError = _dob.isEmpty ? null : (_dob.length < 5 ? 'Invalid date' : null);
-      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 4 ? 'Invalid number' : null);
+      _dobError = _dob.isEmpty ? null : (_dob.length < 8 ? 'Invalid date' : null);
+      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 5 ? 'Invalid ID' : null);
       _passwordError = _password.isEmpty ? null : Validators.validatePassword(_password);
-      _confirmPasswordError = _confirmPassword.isEmpty 
-          ? null 
+      _confirmPasswordError = _confirmPassword.isEmpty
+          ? null
           : (_confirmPassword != _password ? 'Passwords do not match' : null);
     });
   }
@@ -69,7 +72,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
       _dob.isNotEmpty &&
       _studentNumber.isNotEmpty &&
       _password.isNotEmpty &&
-      _confirmPassword.isNotEmpty &&
+      _confirmPassword == _password &&
       _nameError == null &&
       _emailError == null &&
       _dobError == null &&
@@ -79,9 +82,6 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
 
   void _submit() async {
     _validate();
-    if (_nameError != null || _emailError != null || _passwordError != null) {
-      return;
-    }
     if (!_isValid) return;
 
     setState(() { _isLoading = true; _serverError = null; });

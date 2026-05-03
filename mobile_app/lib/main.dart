@@ -4,20 +4,22 @@ import 'loading_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
+  
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
 
   runApp(const SkillSharingApp());
 }
 
-class SkillSharingApp extends StatelessWidget {
-  const SkillSharingApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Skill Sharing',
+      title: 'Skill Sharing Hub',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,

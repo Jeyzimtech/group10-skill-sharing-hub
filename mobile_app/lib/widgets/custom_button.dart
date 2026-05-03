@@ -1,60 +1,18 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends StatefulWidget {
+class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final Color? color;
 
   const CustomButton({
-    super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.color,
+    super.key,
   });
-
-  @override
-  State<CustomButton> createState() => _CustomButtonState();
-}
-
-class _CustomButtonState extends State<CustomButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.forward();
-    }
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.reverse();
-      widget.onPressed!();
-    }
-  }
-
-  void _onTapCancel() {
-    _scaleController.reverse();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +81,37 @@ class _CustomButtonState extends State<CustomButton>
                     ),
                   ),
                 ),
+              ]
+            : [],
+      ),
+      child: ElevatedButton(
+        onPressed: isEnabled ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: EdgeInsets.zero,
         ),
+        child: isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.0,
+                ),
+              ),
       ),
     );
   }

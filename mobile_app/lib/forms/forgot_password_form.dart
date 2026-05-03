@@ -7,10 +7,7 @@ import '../services/auth_service.dart';
 class ForgotPasswordForm extends StatefulWidget {
   final VoidCallback onBackTap;
 
-  const ForgotPasswordForm({
-    required this.onBackTap,
-    super.key,
-  });
+  const ForgotPasswordForm({super.key, required this.onBackTap});
 
   @override
   State<ForgotPasswordForm> createState() => _ForgotPasswordFormState();
@@ -58,7 +55,12 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
     setState(() { _isLoading = true; _serverError = null; });
     try {
       await AuthService.forgotPassword(_email);
-      if (mounted) setState(() { _isLoading = false; _isSuccess = true; });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isSuccess = true;
+        });
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
@@ -79,14 +81,14 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   Widget _buildSuccessState() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9).withValues(alpha: 0.1),
+            color: const Color(0xFFE8F5E9).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -111,16 +113,15 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withOpacity(0.6),
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 48),
         CustomButton(
           text: 'BACK TO LOGIN',
           onPressed: widget.onBackTap,
         ),
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -165,7 +166,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Colors.white.withOpacity(0.5),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -189,7 +190,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           isLoading: _isLoading,
           onPressed: _isValid ? _submit : null,
         ),
-        if (_serverError != null) ...[  
+        if (_serverError != null) ...[
           const SizedBox(height: 12),
           Center(
             child: Text(

@@ -142,10 +142,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           final flipAngle = _flipAnimation.value;
           final forgotAngle = _forgotAnimation.value;
           
-          // Determine which axis to rotate on
-          // If we are doing forgot password, use X axis rotation (Vertical Flip)
-          // If we are doing register, use Y axis rotation (Horizontal Flip)
-          
           Matrix4 transform = Matrix4.identity()..setEntry(3, 2, 0.001);
           
           if (forgotAngle > 0) {
@@ -166,7 +162,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   Widget _getCurrentSide(double cardWidth) {
     if (_showForgotSide) {
-      // Back side of X-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateX(pi),
         alignment: Alignment.center,
@@ -178,7 +173,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     }
     
     if (_showRegisterSide) {
-      // Back side of Y-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateY(pi),
         alignment: Alignment.center,
@@ -189,7 +183,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       );
     }
 
-    // Front side (Login)
     return _buildGlassCard(
       width: cardWidth,
       child: LoginForm(
@@ -212,23 +205,23 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF2DD4BF).withValues(alpha: 0.12),
-                const Color(0xFF0F172A).withValues(alpha: 0.4),
+                const Color(0xFF2DD4BF).withOpacity(0.12),
+                const Color(0xFF0F172A).withOpacity(0.4),
               ],
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFF2DD4BF).withValues(alpha: 0.2),
+              color: const Color(0xFF2DD4BF).withOpacity(0.2),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withOpacity(0.05),
                 blurRadius: 0,
                 offset: const Offset(0, -1),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
+                color: Colors.black.withOpacity(0.5),
                 blurRadius: 50,
                 spreadRadius: -10,
                 offset: const Offset(0, 30),
@@ -267,11 +260,11 @@ class NexusPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.08)
+      ..color = const Color(0xFF2DD4BF).withOpacity(0.08)
       ..strokeWidth = 0.8;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.2)
+      ..color = const Color(0xFF2DD4BF).withOpacity(0.2)
       ..style = PaintingStyle.fill;
 
     final points = [
@@ -285,7 +278,7 @@ class NexusPainter extends CustomPainter {
       for (var j = i + 1; j < points.length; j++) {
         final distance = (points[i] - points[j]).distance;
         if (distance < 250) {
-          paint.color = const Color(0xFF2DD4BF).withValues(alpha: (1 - distance / 250) * 0.1);
+          paint.color = const Color(0xFF2DD4BF).withOpacity((1 - distance / 250) * 0.1);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

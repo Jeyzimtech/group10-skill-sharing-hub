@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'auth_screen.dart';
+import 'screens/skill_listing_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,9 @@ class SkillSharingApp extends StatelessWidget {
         fontFamily: 'Inter',
         scaffoldBackgroundColor: const Color(0xFFF7F9F7),
       ),
+      routes: {
+        '/skills': (context) => const SkillListingScreen(),
+      },
       home: const AuthScreen(),
     );
   }

@@ -7,10 +7,7 @@ import '../services/auth_service.dart';
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
 
-  const RegisterForm({
-    required this.onLoginTap,
-    super.key,
-  });
+  const RegisterForm({super.key, required this.onLoginTap});
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
@@ -57,11 +54,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
     setState(() {
       _nameError = _name.isEmpty ? null : Validators.validateName(_name);
       _emailError = _email.isEmpty ? null : Validators.validateEmail(_email);
-      _dobError = _dob.isEmpty ? null : (_dob.length < 8 ? 'Invalid date' : null);
-      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 5 ? 'Invalid ID' : null);
+      _dobError = _dob.isEmpty ? null : (_dob.length < 5 ? 'Invalid date' : null);
+      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 4 ? 'Invalid number' : null);
       _passwordError = _password.isEmpty ? null : Validators.validatePassword(_password);
-      _confirmPasswordError = _confirmPassword.isEmpty
-          ? null
+      _confirmPasswordError = _confirmPassword.isEmpty 
+          ? null 
           : (_confirmPassword != _password ? 'Passwords do not match' : null);
     });
   }
@@ -72,7 +69,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
       _dob.isNotEmpty &&
       _studentNumber.isNotEmpty &&
       _password.isNotEmpty &&
-      _confirmPassword == _password &&
+      _confirmPassword.isNotEmpty &&
       _nameError == null &&
       _emailError == null &&
       _dobError == null &&
@@ -93,12 +90,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
         studentNumber: _studentNumber,
         password: _password,
       );
+      // Integration check: successfully registered
     } on AuthException catch (e) {
-      if (mounted) setState(() => _serverError = e.message);
+      if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
-      if (mounted) setState(() => _serverError = 'Something went wrong. Please try again.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() { _isLoading = false; _serverError = 'Something went wrong. Please try again.'; });
     }
   }
 

@@ -92,7 +92,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -156,7 +156,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Column(
@@ -178,10 +178,10 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2DD4BF).withOpacity(0.15),
+                  color: const Color(0xFF2DD4BF).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.4),
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.4),
                   ),
                 ),
                 child: Text(

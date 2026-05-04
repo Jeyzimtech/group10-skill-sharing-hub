@@ -59,7 +59,7 @@ class _CustomButtonState extends State<CustomButton>
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    final textColor = const Color(0xFF0F172A); 
+    const textColor = Color(0xFF0F172A); 
 
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -85,13 +85,13 @@ class _CustomButtonState extends State<CustomButton>
                     ],
                     stops: [0.0, 0.4, 1.0],
                   ),
-            color: isDisabled ? Colors.grey.shade400.withOpacity(0.5) : null,
+            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
             borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       blurRadius: 25,
                       spreadRadius: -5,
                       offset: const Offset(0, 12),

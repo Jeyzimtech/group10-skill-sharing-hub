@@ -12,7 +12,7 @@ class AuthException implements Exception {
 }
 
 class AuthService {
-  static const _baseUrl = 'http://10.0.2.2:8000/api'; // Android emulator → host machine localhost
+  static const _baseUrl = 'https://group10-skill-sharing-hub.onrender.com/api';
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
 

@@ -44,7 +44,8 @@ class _SkillPostScreenState extends State<SkillPostScreen> {
 
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Skill posted successfully!'),
@@ -150,8 +151,7 @@ class _SkillPostScreenState extends State<SkillPostScreen> {
                   onPressed: _isLoading ? null : _submitSkill,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2DD4BF),
-                    disabledBackgroundColor:
-                        const Color(0xFF2DD4BF).withOpacity(0.4),
+                    disabledBackgroundColor: const Color(0xFF2DD4BF).withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -209,7 +209,7 @@ class _SkillPostScreenState extends State<SkillPostScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(

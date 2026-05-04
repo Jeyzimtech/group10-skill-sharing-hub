@@ -41,14 +41,14 @@ class SkillCategoryScreen extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF2DD4BF).withOpacity(0.25)
+                    color: isSelected
+                    ? const Color(0xFF2DD4BF).withValues(alpha: 0.25)
                     : const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFF2DD4BF)
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                   width: 1.5,
                 ),
               ),

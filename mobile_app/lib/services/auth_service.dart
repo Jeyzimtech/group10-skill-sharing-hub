@@ -31,7 +31,7 @@ class AuthService {
       if (res.statusCode == 200) {
         await _storage.write(key: _tokenKey, value: body['token'] as String);
       } else if (res.statusCode == 401 || res.statusCode == 403) {
-        throw AuthException(AuthErrorType.invalidCredentials, 'Invalid email or password.');
+        throw const AuthException(AuthErrorType.invalidCredentials, 'Invalid email or password.');
       } else {
         throw AuthException(AuthErrorType.serverError, body['message'] ?? 'Server error. Please try again.');
       }
@@ -67,7 +67,7 @@ class AuthService {
       if (res.statusCode == 201) {
         await _storage.write(key: _tokenKey, value: body['token'] as String);
       } else if (res.statusCode == 409) {
-        throw AuthException(AuthErrorType.emailAlreadyExists, 'An account with this email already exists.');
+        throw const AuthException(AuthErrorType.emailAlreadyExists, 'An account with this email already exists.');
       } else {
         throw AuthException(AuthErrorType.serverError, body['message'] ?? 'Registration failed. Please try again.');
       }

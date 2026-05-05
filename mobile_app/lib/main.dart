@@ -31,10 +31,10 @@ class SkillSharingApp extends StatelessWidget {
       title: 'Skill Sharing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         primaryColor: AppColors.primary,
         scaffoldBackgroundColor: AppColors.background,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: const ColorScheme.light(
           primary: AppColors.primary,
           secondary: AppColors.secondary,
           surface: AppColors.surface,

@@ -151,9 +151,9 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
                 displayedText,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFF0B3B24),
                   fontSize: 18,
-                  fontWeight: FontWeight.w200,
+                  fontWeight: FontWeight.w400,
                   letterSpacing: 4,
                   height: 1.5,
                 ),
@@ -174,7 +174,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           width: 40,
           height: 2,
           decoration: BoxDecoration(
-            color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -193,35 +193,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
   }
 
   Widget _buildBackground() {
-    return Stack(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.2,
-              colors: [AppColors.surface, AppColors.background],
-            ),
-          ),
-        ),
-        // Soft white center glow
-        Center(
-          child: Container(
-            width: 600,
-            height: 600,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.accentWhite.withValues(alpha: 0.05),
-                  AppColors.accentWhite.withValues(alpha: 0),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+    return Container(color: Colors.white);
   }
 }
 
@@ -232,8 +204,8 @@ class NodeNetworkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.4)
-      ..strokeWidth = 1.2;
+      ..color = Colors.grey.withValues(alpha: 0.1)
+      ..strokeWidth = 1.0;
 
     final dotPaint = Paint()
       ..color = AppColors.primary
@@ -257,7 +229,8 @@ class NodeNetworkPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < radius * 1.6) {
           final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
-          paint.color = const Color(0xFF2DD4BF).withValues(alpha: opacity * 0.3);
+          final color = i % 3 == 0 ? AppColors.secondary : AppColors.primary;
+          paint.color = color.withValues(alpha: opacity * 0.3);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

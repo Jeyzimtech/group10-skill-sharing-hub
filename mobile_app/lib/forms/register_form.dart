@@ -3,6 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../screens/skill_listing_screen.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -90,7 +91,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
         studentNumber: _studentNumber,
         password: _password,
       );
-      // Integration check: successfully registered
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {

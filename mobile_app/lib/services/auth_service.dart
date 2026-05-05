@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 enum AuthErrorType { invalidCredentials, emailAlreadyExists, networkError, serverError, unknown }
 
@@ -12,33 +10,31 @@ class AuthException implements Exception {
 }
 
 class AuthService {
-  static const _baseUrl = 'https://group10-skill-sharing-hub.onrender.com/api';
-  static const _storage = FlutterSecureStorage();
-  static const _tokenKey = 'auth_token';
+  static final _auth = FirebaseAuth.instance;
+  static final _firestore = FirebaseFirestore.instance;
 
-  static Future<String?> getToken() => _storage.read(key: _tokenKey);
+  static Future<String?> getToken() async {
+    return _auth.currentUser?.uid;
+  }
 
-  static Future<void> clearToken() => _storage.delete(key: _tokenKey);
+  static Future<void> logout() async {
+    await _auth.signOut();
+  }
 
   static Future<void> login(String email, String password) async {
     try {
-      final res = await http.post(
-        Uri.parse('$_baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      ).timeout(const Duration(seconds: 10));
-      final body = jsonDecode(res.body);
-      if (res.statusCode == 200) {
-        await _storage.write(key: _tokenKey, value: body['token'] as String);
-      } else if (res.statusCode == 401 || res.statusCode == 403) {
-        throw const AuthException(AuthErrorType.invalidCredentials, 'Invalid email or password.');
-      } else {
-        throw AuthException(AuthErrorType.serverError, body['message'] ?? 'Server error. Please try again.');
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+        case 'user-not-found':
+        case 'wrong-password':
+          throw const AuthException(AuthErrorType.invalidCredentials, 'Invalid email or password.');
+        case 'user-disabled':
+          throw const AuthException(AuthErrorType.serverError, 'This account has been disabled.');
+        default:
+          throw AuthException(AuthErrorType.serverError, e.message ?? 'Authentication failed. Please try again.');
       }
-    } on AuthException {
-      rethrow;
-    } on SocketException {
-      throw const AuthException(AuthErrorType.networkError, 'No internet connection. Please check your network.');
     } catch (_) {
       throw const AuthException(AuthErrorType.networkError, 'Unable to connect. Please try again.');
     }
@@ -52,29 +48,36 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final res = await http.post(
-        Uri.parse('$_baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': name,
-          'email': email,
-          'dob': dob,
-          'student_number': studentNumber,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 10));
-      final body = jsonDecode(res.body);
-      if (res.statusCode == 201) {
-        await _storage.write(key: _tokenKey, value: body['token'] as String);
-      } else if (res.statusCode == 409) {
-        throw const AuthException(AuthErrorType.emailAlreadyExists, 'An account with this email already exists.');
-      } else {
-        throw AuthException(AuthErrorType.serverError, body['message'] ?? 'Registration failed. Please try again.');
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = credential.user;
+      if (user == null) {
+        throw const AuthException(AuthErrorType.unknown, 'Registration failed. Please try again.');
       }
-    } on AuthException {
-      rethrow;
-    } on SocketException {
-      throw const AuthException(AuthErrorType.networkError, 'No internet connection. Please check your network.');
+
+      await user.updateDisplayName(name);
+
+      await _firestore.collection('users').doc(user.uid).set({
+        'name': name,
+        'email': email,
+        'dob': dob,
+        'studentNumber': studentNumber,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          throw const AuthException(AuthErrorType.emailAlreadyExists, 'An account with this email already exists.');
+        case 'invalid-email':
+          throw const AuthException(AuthErrorType.invalidCredentials, 'Invalid email address.');
+        case 'weak-password':
+          throw const AuthException(AuthErrorType.invalidCredentials, 'Password is too weak.');
+        default:
+          throw AuthException(AuthErrorType.serverError, e.message ?? 'Registration failed. Please try again.');
+      }
     } catch (_) {
       throw const AuthException(AuthErrorType.networkError, 'Unable to connect. Please try again.');
     }
@@ -82,19 +85,15 @@ class AuthService {
 
   static Future<void> forgotPassword(String email) async {
     try {
-      final res = await http.post(
-        Uri.parse('$_baseUrl/auth/forgot-password'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      ).timeout(const Duration(seconds: 10));
-      if (res.statusCode != 200) {
-        final body = jsonDecode(res.body);
-        throw AuthException(AuthErrorType.serverError, body['message'] ?? 'Request failed. Please try again.');
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+        case 'user-not-found':
+          throw const AuthException(AuthErrorType.invalidCredentials, 'No user found with this email.');
+        default:
+          throw AuthException(AuthErrorType.serverError, e.message ?? 'Request failed. Please try again.');
       }
-    } on AuthException {
-      rethrow;
-    } on SocketException {
-      throw const AuthException(AuthErrorType.networkError, 'No internet connection. Please check your network.');
     } catch (_) {
       throw const AuthException(AuthErrorType.networkError, 'Unable to connect. Please try again.');
     }

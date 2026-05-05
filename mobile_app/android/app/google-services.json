@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "804559797881",
+    "project_id": "peer-to-peer-f1f68",
+    "storage_bucket": "peer-to-peer-f1f68.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804559797881:android:35e394c24f0aa53ee6dea8",
+        "android_client_info": {
+          "package_name": "com.example.mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3zodrbFe5b-PGaqCSK9HwfGz9umrCwOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

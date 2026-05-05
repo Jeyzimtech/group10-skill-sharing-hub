@@ -1,17 +1,22 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'loading_screen.dart';
-import 'services/auth_service.dart';
+import 'screens/skill_listing_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
 
-  final token = await AuthService.getToken();
-  runApp(SkillSharingApp(isAuthenticated: token != null));
+  final isAuthenticated = FirebaseAuth.instance.currentUser != null;
+  runApp(SkillSharingApp(isAuthenticated: isAuthenticated));
 }
 
 class SkillSharingApp extends StatelessWidget {
@@ -35,7 +40,7 @@ class SkillSharingApp extends StatelessWidget {
       ),
       // If already authenticated skip loading/auth screens
       // TODO: replace Placeholder() with your actual home screen
-      home: isAuthenticated ? const Placeholder() : const LoadingScreen(),
+      home: isAuthenticated ? const SkillListingScreen() : const LoadingScreen(),
     );
   }
 }

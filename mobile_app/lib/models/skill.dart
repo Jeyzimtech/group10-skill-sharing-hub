@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Skill {
   final String id;
   final String title;
@@ -16,13 +18,24 @@ class Skill {
   });
 
   factory Skill.fromJson(Map<String, dynamic> json) {
+    final timestamp = json['createdAt'];
+    DateTime createdAt;
+
+    if (timestamp is Timestamp) {
+      createdAt = timestamp.toDate();
+    } else if (timestamp is String) {
+      createdAt = DateTime.tryParse(timestamp) ?? DateTime.now();
+    } else {
+      createdAt = DateTime.now();
+    }
+
     return Skill(
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       category: json['category'] ?? '',
-      postedBy: json['posted_by'] ?? '',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      postedBy: json['postedBy'] ?? json['posted_by'] ?? '',
+      createdAt: createdAt,
     );
   }
 
@@ -31,7 +44,8 @@ class Skill {
       'title': title,
       'description': description,
       'category': category,
-      'posted_by': postedBy,
+      'postedBy': postedBy,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 }

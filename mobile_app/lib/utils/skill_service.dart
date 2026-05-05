@@ -1,35 +1,41 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/skill.dart';
 
 class SkillService {
-  // Replace this with your actual backend URL when ready
-  static const String baseUrl = 'https://your-api-url.com/api';
+  static final _firestore = FirebaseFirestore.instance;
 
-  // Fetch all skills
   static Future<List<Skill>> fetchSkills() async {
-  // TODO: Replace with real API call when backend is ready
-  // Returning mock data directly for now
-  await Future.delayed(const Duration(milliseconds: 300));
-  return _mockSkills();
-}
-
-  // Post a new skill
-  static Future<bool> postSkill(Skill skill) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/skills'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(skill.toJson()),
-      );
-      return response.statusCode == 201;
-    } catch (e) {
-      // Mock success while backend is not ready
-      return true;
+      final snapshot = await _firestore
+          .collection('skills')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Skill.fromJson(data);
+      }).toList();
+    } catch (_) {
+      return _mockSkills();
     }
   }
 
-  // Search skills
+  static Future<bool> postSkill(Skill skill) async {
+    try {
+      await _firestore.collection('skills').add({
+        'title': skill.title,
+        'description': skill.description,
+        'category': skill.category,
+        'postedBy': skill.postedBy,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<List<Skill>> searchSkills(String query, String category) async {
     final all = await fetchSkills();
     return all.where((skill) {
@@ -40,7 +46,6 @@ class SkillService {
     }).toList();
   }
 
-  // Mock data for development
   static List<Skill> _mockSkills() {
     return [
       Skill(id: '1', title: 'Python Programming', description: 'I can teach Python basics to advanced', category: 'Programming', postedBy: 'Mthabisi', createdAt: DateTime.now()),

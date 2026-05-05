@@ -3,6 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../screens/skill_listing_screen.dart';
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
@@ -63,6 +64,11 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
     setState(() { _isLoading = true; _serverError = null; });
     try {
       await AuthService.login(_email, _password);
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
@@ -87,7 +93,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -97,7 +103,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                   child: Icon(
                     Icons.person,
                     size: 40,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ),
@@ -144,14 +150,14 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
               child: TextButton(
                 onPressed: widget.onForgotPasswordTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.6),
+                  foregroundColor: Colors.white.withValues(alpha: 0.6),
                   padding: EdgeInsets.zero,
                 ),
                 child: RichText(
                   text: TextSpan(
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w400,
                     ),
                     children: [
@@ -159,7 +165,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                       TextSpan(
                         text: 'Click Here',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

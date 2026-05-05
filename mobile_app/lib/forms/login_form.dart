@@ -3,7 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
-import '../screens/skill_listing_screen.dart';
+import '../screens/main_navigation_screen.dart';
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
@@ -66,7 +66,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
       await AuthService.login(_email, _password);
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
         );
       }
     } on AuthException catch (e) {

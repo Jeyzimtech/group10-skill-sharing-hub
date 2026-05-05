@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'loading_screen.dart';
-import 'screens/skill_listing_screen.dart';
+import 'screens/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +38,7 @@ class SkillSharingApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      // If already authenticated skip loading/auth screens
-      // TODO: replace Placeholder() with your actual home screen
-      home: isAuthenticated ? const SkillListingScreen() : const LoadingScreen(),
+      home: isAuthenticated ? const MainNavigationScreen() : const LoadingScreen(),
     );
   }
 }

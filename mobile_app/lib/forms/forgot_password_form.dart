@@ -50,7 +50,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   void _submit() async {
     _validate();
-    if (_emailError != null || !_isValid) return;
+    if (!_isValid) return;
 
     setState(() { _isLoading = true; _serverError = null; });
     try {

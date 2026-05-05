@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'loading_screen.dart';
-import 'screens/skill_listing_screen.dart';
+import 'screens/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +13,7 @@ void main() async {
   );
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
   ]);
 
   final isAuthenticated = FirebaseAuth.instance.currentUser != null;
@@ -26,21 +27,21 @@ class SkillSharingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Skill Sharing Hub',
+      title: 'Skill Sharing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFF2DD4BF),
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2DD4BF),
-          brightness: Brightness.dark,
+        primaryColor: AppColors.primary,
+        scaffoldBackgroundColor: AppColors.background,
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          surface: AppColors.surface,
+          error: AppColors.error,
         ),
+        fontFamily: 'Roboto',
       ),
-      // If already authenticated skip loading/auth screens
-      // TODO: replace Placeholder() with your actual home screen
-      home: isAuthenticated ? const SkillListingScreen() : const LoadingScreen(),
+      home: isAuthenticated ? const MainNavigationScreen() : const LoadingScreen(),
     );
   }
 }

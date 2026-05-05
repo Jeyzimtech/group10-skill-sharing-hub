@@ -18,17 +18,44 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: 54,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: onPressed != null
-              ? LinearGradient(
-                  colors: [
-                    const Color(0xFF2DD4BF),
-                    const Color(0xFF2DD4BF).withValues(alpha: 0.7),
+    final isDisabled = widget.onPressed == null;
+    const textColor = Color(0xFF0F172A); 
+
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          height: 56,
+          width: widget.isLoading ? 56 : double.infinity,
+          decoration: BoxDecoration(
+            gradient: isDisabled || widget.isLoading
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFFFFFFF),
+                      Color(0xFFF0F0F0),
+                      Color(0xFFE2E2E2),
+                    ],
+                    stops: [0.0, 0.4, 1.0],
+                  ),
+            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
+            borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
+            boxShadow: isDisabled || widget.isLoading
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 25,
+                      spreadRadius: -5,
+                      offset: const Offset(0, 12),
+                    )
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,

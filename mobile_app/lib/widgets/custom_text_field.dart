@@ -87,7 +87,7 @@ class _CustomTextFieldState extends State<CustomTextField>
               color: const Color(0xFF0B121A).withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: hasError ? AppColors.error : Colors.white.withValues(alpha: 0.05),
+                color: hasError ? Colors.red : Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),

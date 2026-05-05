@@ -174,7 +174,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           width: 40,
           height: 2,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -232,7 +232,7 @@ class NodeNetworkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.4)
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.4)
       ..strokeWidth = 1.2;
 
     final dotPaint = Paint()
@@ -257,8 +257,7 @@ class NodeNetworkPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < radius * 1.6) {
           final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
-          final color = i % 3 == 0 ? AppColors.secondary : AppColors.primary;
-          paint.color = color.withValues(alpha: opacity * 0.3);
+          paint.color = const Color(0xFF2DD4BF).withValues(alpha: opacity * 0.3);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

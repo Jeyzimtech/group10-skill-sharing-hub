@@ -219,8 +219,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              width: 1.2,
+              color: const Color(0xFF2DD4BF).withValues(alpha: 0.2),
+              width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
@@ -307,11 +307,11 @@ class NexusPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.08)
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.08)
       ..strokeWidth = 0.8;
 
     final dotPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.2)
+      ..color = const Color(0xFF2DD4BF).withValues(alpha: 0.2)
       ..style = PaintingStyle.fill;
 
     final points = [
@@ -325,8 +325,7 @@ class NexusPainter extends CustomPainter {
       for (var j = i + 1; j < points.length; j++) {
         final distance = (points[i] - points[j]).distance;
         if (distance < 250) {
-          final color = i % 2 == 0 ? AppColors.primary : AppColors.secondary;
-          paint.color = color.withValues(alpha: (1 - distance / 250) * 0.1);
+          paint.color = const Color(0xFF2DD4BF).withValues(alpha: (1 - distance / 250) * 0.1);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

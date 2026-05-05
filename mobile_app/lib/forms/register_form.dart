@@ -3,6 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../screens/main_navigation_screen.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -76,7 +77,11 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
         fullName: _fullName,
         studentId: _studentId,
       );
-      // Main app will handle navigation via auth state listener
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
@@ -185,13 +190,62 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
                   ),
                 ),
               ],
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Already have an account? ",
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              label: 'Password',
+              icon: Icons.lock,
+              isPassword: true,
+              errorText: _passwordError,
+              isSuccess: _password.isNotEmpty && _passwordError == null,
+              onChanged: (value) {
+                _password = value;
+                _validate();
+              },
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              label: 'Confirm Password',
+              icon: Icons.lock,
+              isPassword: true,
+              textInputAction: TextInputAction.done,
+              errorText: _confirmPasswordError,
+              isSuccess: _confirmPassword.isNotEmpty && _confirmPasswordError == null,
+              onChanged: (value) {
+                _confirmPassword = value;
+                _validate();
+              },
+            ),
+            const SizedBox(height: 32),
+            CustomButton(
+              text: 'SIGN UP',
+              isLoading: _isLoading,
+              onPressed: _isValid ? _submit : null,
+            ),
+            if (_serverError != null) ...[
+              const SizedBox(height: 12),
+              Center(
+                child: Text(
+                  _serverError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+            const SizedBox(height: 32),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: widget.onLoginTap,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withValues(alpha: 0.8),
+                ),
+                child: const Text(
+                  'ALREADY REGISTERED? SIGN IN',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
                   ),
                   GestureDetector(
                     onTap: widget.onLoginTap,

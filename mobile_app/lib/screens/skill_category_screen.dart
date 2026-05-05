@@ -31,20 +31,24 @@ class SkillCategoryScreen extends StatelessWidget {
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = category == selectedCategory;
-          
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (_) => onCategorySelected(category),
-              backgroundColor: const Color(0xFF1E293B),
-              selectedColor: const Color(0xFF2DD4BF),
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.black : Colors.white70,
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          final isSelected = selectedCategory == category['name'];
+
+          return GestureDetector(
+            onTap: () => onCategorySelected(category['name']),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                    color: isSelected
+                    ? const Color(0xFF2DD4BF).withValues(alpha: 0.25)
+                    : const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF2DD4BF)
+                      : Colors.white.withValues(alpha: 0.1),
+                  width: 1.5,
+                ),
               ),
               checkmarkColor: Colors.black,
               shape: RoundedRectangleBorder(

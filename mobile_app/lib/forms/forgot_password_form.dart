@@ -21,6 +21,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
   String? _emailError;
   String? _serverError;
   bool _isLoading = false;
+  bool _isSuccess = false;
 
   @override
   void initState() {
@@ -55,10 +56,10 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
     try {
       await AuthService.forgotPassword(_email);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset email sent!')),
-        );
-        widget.onBackTap();
+        setState(() {
+          _isLoading = false;
+          _isSuccess = true;
+        });
       }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
@@ -73,75 +74,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
       opacity: _fadeAnimation,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Center(
-              child: Text(
-                'FORGOT PASSWORD',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                  letterSpacing: 4.0,
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Enter your email to receive password reset instructions.',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 24),
-            CustomTextField(
-              label: 'Email Address',
-              icon: Icons.mail,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              errorText: _emailError,
-              isSuccess: _email.isNotEmpty && _emailError == null,
-              onChanged: (value) {
-                _email = value;
-                _validate();
-              },
-            ),
-            const SizedBox(height: 32),
-            CustomButton(
-              text: 'SEND INSTRUCTIONS',
-              isLoading: _isLoading,
-              onPressed: _isValid ? _submit : null,
-            ),
-            if (_serverError != null) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  _serverError!,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-            const SizedBox(height: 32),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: widget.onBackTap,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.8),
-                ),
-                child: const Text(
-                  'BACK TO SIGN IN',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: _isSuccess ? _buildSuccessState() : _buildFormState(),
       ),
     );
   }

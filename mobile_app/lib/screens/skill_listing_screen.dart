@@ -53,6 +53,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
           ),
         ),
         actions: [
@@ -78,10 +79,10 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: (_) => _loadSkills(),
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
               decoration: InputDecoration(
                 hintText: 'Search skills...',
-                hintStyle: const TextStyle(color: Colors.white38),
+                hintStyle: const TextStyle(color: Colors.white38, fontStyle: FontStyle.italic),
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF2DD4BF)),
                 filled: true,
                 fillColor: const Color(0xFF1E293B),
@@ -128,7 +129,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
                     ? const Center(
                         child: Text(
                           'No skills found',
-                          style: TextStyle(color: Colors.white54),
+                          style: TextStyle(color: Colors.white54, fontStyle: FontStyle.italic),
                         ),
                       )
                     : RefreshIndicator(
@@ -166,12 +167,13 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
+                  child: Text(
                   skill.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
@@ -190,6 +192,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
                     color: Color(0xFF2DD4BF),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
               ),
@@ -201,6 +204,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
             style: const TextStyle(
               color: Colors.white60,
               fontSize: 13,
+              fontStyle: FontStyle.italic,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -215,6 +219,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
                 style: const TextStyle(
                   color: Colors.white38,
                   fontSize: 12,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
               const Spacer(),
@@ -225,6 +230,7 @@ class _SkillListingScreenState extends State<SkillListingScreen> {
                 style: const TextStyle(
                   color: Colors.white38,
                   fontSize: 12,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
             ],

@@ -58,6 +58,7 @@ class _CustomButtonState extends State<CustomButton>
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< Updated upstream
     final isDisabled = widget.onPressed == null;
     final textColor = const Color(0xFF0F172A); 
 
@@ -122,7 +123,26 @@ class _CustomButtonState extends State<CustomButton>
                   ),
                 ),
         ),
+=======
+    final background = color ?? Theme.of(context).colorScheme.primary;
+    return ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: background,
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+>>>>>>> Stashed changes
       ),
+      child: isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            )
+          : Text(
+              text,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            ),
     );
   }
 }

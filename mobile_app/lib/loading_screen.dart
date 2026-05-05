@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'auth_screen.dart';
 
 class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
+  final bool skipNavigation;
+
+  const LoadingScreen({super.key, this.skipNavigation = false});
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
@@ -37,6 +39,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
 
     _textController.forward();
 
+<<<<<<< Updated upstream
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -53,25 +56,39 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
               var scaleAnimation = Tween<double>(begin: 1.05, end: 1.0).animate(
                 CurvedAnimation(parent: animation, curve: curve)
               );
+=======
+    if (!widget.skipNavigation) {
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const AuthScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const curve = Curves.fastLinearToSlowEaseIn;
+>>>>>>> Stashed changes
 
-              var blurAnimation = Tween<double>(begin: 10.0, end: 0.0).animate(
-                CurvedAnimation(parent: animation, curve: curve)
-              );
+                var fadeAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+                );
 
-              return AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) {
-                  return ImageFiltered(
-                    imageFilter: ImageFilter.blur(
-                      sigmaX: blurAnimation.value,
-                      sigmaY: blurAnimation.value,
-                    ),
-                    child: FadeTransition(
-                      opacity: fadeAnimation,
-                      child: ScaleTransition(
-                        scale: scaleAnimation,
-                        child: child,
+                var scaleAnimation = Tween<double>(begin: 1.05, end: 1.0).animate(
+                  CurvedAnimation(parent: animation, curve: curve),
+                );
+
+                var blurAnimation = Tween<double>(begin: 10.0, end: 0.0).animate(
+                  CurvedAnimation(parent: animation, curve: curve),
+                );
+
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    return ImageFiltered(
+                      imageFilter: ImageFilter.blur(
+                        sigmaX: blurAnimation.value,
+                        sigmaY: blurAnimation.value,
                       ),
+<<<<<<< Updated upstream
                     ),
                   );
                 },
@@ -83,6 +100,26 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
         );
       }
     });
+=======
+                      child: FadeTransition(
+                        opacity: fadeAnimation,
+                        child: ScaleTransition(
+                          scale: scaleAnimation,
+                          child: child,
+                        ),
+                      ),
+                    );
+                  },
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 2000),
+            ),
+          );
+        }
+      });
+    }
+>>>>>>> Stashed changes
   }
 
   @override

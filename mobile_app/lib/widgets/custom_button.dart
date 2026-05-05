@@ -1,60 +1,20 @@
 import 'package:flutter/material.dart';
 
-class CustomButton extends StatefulWidget {
+class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final Color? color;
+  final double? width;
 
   const CustomButton({
     super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
+    this.color,
+    this.width,
   });
-
-  @override
-  State<CustomButton> createState() => _CustomButtonState();
-}
-
-class _CustomButtonState extends State<CustomButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.forward();
-    }
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.reverse();
-      widget.onPressed!();
-    }
-  }
-
-  void _onTapCancel() {
-    _scaleController.reverse();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,30 +57,47 @@ class _CustomButtonState extends State<CustomButton>
                       offset: const Offset(0, 12),
                     )
                   ],
-          ),
-          alignment: Alignment.center,
-          child: widget.isLoading
-              ? SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: textColor,
-                    strokeWidth: 3,
-                  ),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 )
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Text(
-                    widget.text,
-                    key: ValueKey(widget.text),
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 3.5,
-                    ),
+              : null,
+          color: onPressed == null ? Colors.white.withValues(alpha: 0.1) : null,
+          boxShadow: onPressed != null
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
-                ),
+                ]
+              : null,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isLoading ? null : onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Center(
+              child: isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: TextStyle(
+                        color: onPressed != null ? Colors.black : Colors.white38,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        letterSpacing: 2,
+                      ),
+                    ),
+            ),
+          ),
         ),
       ),
     );

@@ -10,9 +10,9 @@ class LoginForm extends StatefulWidget {
   final VoidCallback onForgotPasswordTap;
 
   const LoginForm({
+    super.key,
     required this.onRegisterTap,
     required this.onForgotPasswordTap,
-    super.key,
   });
 
   @override
@@ -23,6 +23,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
   String? _emailError;
@@ -54,8 +55,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
     });
   }
 
-  bool get _isValid =>
-      _email.isNotEmpty && _password.isNotEmpty && _emailError == null && _passwordError == null;
+  bool get _isValid => _email.isNotEmpty && _password.isNotEmpty && _emailError == null && _passwordError == null;
 
   void _submit() async {
     _validate();
@@ -72,7 +72,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
-      if (mounted) setState(() { _isLoading = false; _serverError = 'Something went wrong. Please try again.'; });
+      if (mounted) setState(() { _isLoading = false; _serverError = 'An unexpected error occurred. Please try again.'; });
     }
   }
 
@@ -110,20 +110,21 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
             ),
             const Center(
               child: Text(
-                'MEMBER LOGIN',
+                'SIGN IN',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Colors.white,
-                  letterSpacing: 4.0,
+                  letterSpacing: 8.0,
                 ),
               ),
             ),
             const SizedBox(height: 40),
             CustomTextField(
-              label: 'Email',
-              icon: Icons.mail,
+              label: 'Email Address',
+              icon: Icons.mail_outline,
               keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
               errorText: _emailError,
               isSuccess: _email.isNotEmpty && _emailError == null,
               onChanged: (value) {
@@ -134,7 +135,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
             const SizedBox(height: 20),
             CustomTextField(
               label: 'Password',
-              icon: Icons.lock,
+              icon: Icons.lock_outline,
               isPassword: true,
               textInputAction: TextInputAction.done,
               errorText: _passwordError,
@@ -144,9 +145,8 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 _validate();
               },
             ),
-            const SizedBox(height: 12),
             Align(
-              alignment: Alignment.center,
+              alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: widget.onForgotPasswordTap,
                 style: TextButton.styleFrom(
@@ -176,7 +176,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
             ),
             const SizedBox(height: 32),
             CustomButton(
-              text: 'SIGN IN',
+              text: 'LOGIN',
               isLoading: _isLoading,
               onPressed: _isValid ? _submit : null,
             ),
@@ -190,23 +190,27 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 ),
               ),
             ],
-            const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: widget.onRegisterTap,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFE0E0E0),
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Don't have an account? ",
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
                 ),
-                child: const Text(
-                  'CREATE NEW ACCOUNT',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
+                GestureDetector(
+                  onTap: widget.onRegisterTap,
+                  child: const Text(
+                    'SIGN UP',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

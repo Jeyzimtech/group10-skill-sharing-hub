@@ -219,7 +219,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: AppColors.accentWhite.withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.2),
               width: 1.2,
             ),
             boxShadow: [

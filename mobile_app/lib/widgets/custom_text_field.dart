@@ -84,10 +84,10 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0B121A).withValues(alpha: 0.9),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: hasError ? Colors.red : Colors.white.withValues(alpha: 0.05),
+                color: hasError ? AppColors.error : AppColors.primary.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -100,19 +100,19 @@ class _CustomTextFieldState extends State<CustomTextField>
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: Colors.white,
+                color: Color(0xFF0B3B24),
                 letterSpacing: 0.5,
               ),
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: const Color(0xFF0B3B24).withValues(alpha: 0.4),
                   fontSize: 15,
                 ),
                 prefixIcon: Icon(
                   widget.icon,
                   size: 20,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: AppColors.primary,
                 ),
                 suffixIcon: _buildSuffixIcon(activeColor),
                 border: InputBorder.none,

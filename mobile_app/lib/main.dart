@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'loading_screen.dart';
-import 'screens/main_navigation_screen.dart';
+import 'screens/skill_listing_screen.dart';
+import 'utils/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +31,10 @@ class SkillSharingApp extends StatelessWidget {
       title: 'Skill Sharing',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         primaryColor: AppColors.primary,
         scaffoldBackgroundColor: AppColors.background,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: const ColorScheme.light(
           primary: AppColors.primary,
           secondary: AppColors.secondary,
           surface: AppColors.surface,
@@ -41,7 +42,8 @@ class SkillSharingApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: isAuthenticated ? const MainNavigationScreen() : const LoadingScreen(),
+      // If already authenticated skip loading/auth screens
+      home: isAuthenticated ? const SkillListingScreen() : const LoadingScreen(),
     );
   }
 }

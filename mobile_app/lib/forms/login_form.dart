@@ -3,15 +3,16 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../screens/main_navigation_screen.dart';
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
   final VoidCallback onForgotPasswordTap;
 
   const LoginForm({
+    super.key,
     required this.onRegisterTap,
     required this.onForgotPasswordTap,
-    super.key,
   });
 
   @override
@@ -22,6 +23,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
+  final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
   String? _emailError;
@@ -53,8 +55,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
     });
   }
 
-  bool get _isValid =>
-      _email.isNotEmpty && _password.isNotEmpty && _emailError == null && _passwordError == null;
+  bool get _isValid => _email.isNotEmpty && _password.isNotEmpty && _emailError == null && _passwordError == null;
 
   void _submit() async {
     _validate();
@@ -63,10 +64,15 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
     setState(() { _isLoading = true; _serverError = null; });
     try {
       await AuthService.login(_email, _password);
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        );
+      }
     } on AuthException catch (e) {
       if (mounted) setState(() { _isLoading = false; _serverError = e.message; });
     } catch (_) {
-      if (mounted) setState(() { _isLoading = false; _serverError = 'Something went wrong. Please try again.'; });
+      if (mounted) setState(() { _isLoading = false; _serverError = 'An unexpected error occurred. Please try again.'; });
     }
   }
 
@@ -87,7 +93,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFF2DD4BF).withOpacity(0.3),
+                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -97,27 +103,28 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                   child: Icon(
                     Icons.person,
                     size: 40,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ),
             ),
             const Center(
               child: Text(
-                'MEMBER LOGIN',
+                'SIGN IN',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: Colors.white,
-                  letterSpacing: 4.0,
+                  letterSpacing: 8.0,
                 ),
               ),
             ),
             const SizedBox(height: 40),
             CustomTextField(
-              label: 'Email',
-              icon: Icons.mail,
+              label: 'Email Address',
+              icon: Icons.mail_outline,
               keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
               errorText: _emailError,
               isSuccess: _email.isNotEmpty && _emailError == null,
               onChanged: (value) {
@@ -128,7 +135,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
             const SizedBox(height: 20),
             CustomTextField(
               label: 'Password',
-              icon: Icons.lock,
+              icon: Icons.lock_outline,
               isPassword: true,
               textInputAction: TextInputAction.done,
               errorText: _passwordError,
@@ -138,20 +145,19 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 _validate();
               },
             ),
-            const SizedBox(height: 12),
             Align(
-              alignment: Alignment.center,
+              alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: widget.onForgotPasswordTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.6),
+                  foregroundColor: Colors.white.withValues(alpha: 0.6),
                   padding: EdgeInsets.zero,
                 ),
                 child: RichText(
                   text: TextSpan(
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w400,
                     ),
                     children: [
@@ -159,7 +165,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                       TextSpan(
                         text: 'Click Here',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -170,7 +176,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
             ),
             const SizedBox(height: 32),
             CustomButton(
-              text: 'SIGN IN',
+              text: 'LOGIN',
               isLoading: _isLoading,
               onPressed: _isValid ? _submit : null,
             ),
@@ -184,23 +190,27 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 ),
               ),
             ],
-            const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: widget.onRegisterTap,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFE0E0E0),
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Don't have an account? ",
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
                 ),
-                child: const Text(
-                  'CREATE NEW ACCOUNT',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
+                GestureDetector(
+                  onTap: widget.onRegisterTap,
+                  child: const Text(
+                    'SIGN UP',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

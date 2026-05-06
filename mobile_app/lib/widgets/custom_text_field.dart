@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../utils/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
@@ -64,10 +65,10 @@ class _CustomTextFieldState extends State<CustomTextField>
   Widget build(BuildContext context) {
     final hasError = widget.errorText != null;
     final activeColor = hasError
-        ? const Color(0xFFE53935)
+        ? AppColors.error
         : widget.isSuccess
-            ? const Color(0xFF43A047)
-            : const Color(0xFF2E7D32);
+            ? AppColors.success
+            : AppColors.secondary;
 
     return AnimatedBuilder(
       animation: _shakeAnimation,
@@ -83,10 +84,10 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0B121A).withOpacity(0.9),
+              color: const Color(0xFF0B121A).withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: hasError ? Colors.red : Colors.white.withOpacity(0.05),
+                color: hasError ? Colors.red : Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -95,7 +96,7 @@ class _CustomTextFieldState extends State<CustomTextField>
               onChanged: widget.onChanged,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
-              cursorColor: const Color(0xFF2DD4BF),
+              cursorColor: AppColors.primary,
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
@@ -105,13 +106,13 @@ class _CustomTextFieldState extends State<CustomTextField>
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 15,
                 ),
                 prefixIcon: Icon(
                   widget.icon,
                   size: 20,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
                 suffixIcon: _buildSuffixIcon(activeColor),
                 border: InputBorder.none,
@@ -128,7 +129,7 @@ class _CustomTextFieldState extends State<CustomTextField>
               child: Text(
                 widget.errorText!,
                 style: const TextStyle(
-                  color: Color(0xFFE53935),
+                  color: AppColors.error,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

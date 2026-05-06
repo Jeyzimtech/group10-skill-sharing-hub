@@ -1,32 +1,30 @@
-# 🚀 Skills Sharing Hub
+# Skills Sharing Hub
 
-![App Icon](assets/icon/app_icon.png)
-
-**Skills Sharing Hub** is a premium, all-in-one platform designed to connect expert tutors with eager students. Whether you want to master a new programming language, pick up a musical instrument, or learn advanced business strategy, Skills Sharing Hub provides the tools to make knowledge exchange seamless, interactive, and personalized.
+Skills Sharing Hub is a premium, all-in-one platform designed to connect expert tutors with eager students. Whether you want to master a new programming language, pick up a musical instrument, or learn advanced business strategy, Skills Sharing Hub provides the tools to make knowledge exchange seamless, interactive, and personalized.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🤖 Funda Mwana AI Tutor
+### Funda Mwana AI Tutor
 - **Your 24/7 Study Buddy**: Powered by advanced AI (OpenRouter/Owl-Alpha), Funda Mwana is always online to answer questions, explain complex concepts, and guide your learning journey.
 - **Context-Aware Chat**: Remembers your conversation to provide tailored educational support.
 
-### 🎥 Real-Time Video Calling
-- **Integrated Video Sessions**: Powered by **Agora**, start high-quality video calls directly from your chat or scheduled sessions.
+### Real-Time Video Calling
+- **Integrated Video Sessions**: Powered by Agora, start high-quality video calls directly from your chat or scheduled sessions.
 - **Dual-View & Controls**: Seamlessly switch cameras, mute audio, and experience crystal-clear tutoring sessions from anywhere in the world.
 
-### 💬 Smart Messaging System
+### Smart Messaging System
 - **Real-Time Communication**: Built on Firebase Firestore for instant message delivery.
 - **Session Notifications**: Automatic chat updates when video sessions are initiated, ensuring you never miss a call.
 
-### 🎓 Dynamic Dashboard
+### Dynamic Dashboard
 - **Personalized Recommendations**: Discover featured tutors and popular skill categories.
 - **Flexible Scheduling**: Manage your upcoming sessions and track your learning progress in a sleek, dark-mode optimized interface.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: [Flutter](https://flutter.dev/) (Cross-platform Mobile Development)
 - **Backend**: [Firebase](https://firebase.google.com/) (Auth, Firestore, Hosting)
@@ -36,7 +34,7 @@
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Flutter SDK (latest version)
@@ -71,7 +69,7 @@
 
 ---
 
-## 📱 Visuals
+## Visuals
 
 | Feature | Description |
 |---------|-------------|
@@ -81,10 +79,10 @@
 
 ---
 
-## 📄 License
-This project is part of the **Skills Sharing Hub** initiative. All rights reserved.
+## License
+This project is part of the Skills Sharing Hub initiative. All rights reserved.
 
 ---
 
-## 🤝 Contributors
-Developed with ❤️ by the **Skills Sharing Hub Team**.
+## Contributors
+Developed by the Skills Sharing Hub Team.

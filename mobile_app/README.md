@@ -1,5 +1,7 @@
 # Skills Sharing Hub
 
+Official Repository: [https://github.com/Jeyzimtech/group10-skill-sharing-hub.git](https://github.com/Jeyzimtech/group10-skill-sharing-hub.git)
+
 Skills Sharing Hub is a premium, all-in-one platform designed to connect expert tutors with eager students. Whether you want to master a new programming language, pick up a musical instrument, or learn advanced business strategy, Skills Sharing Hub provides the tools to make knowledge exchange seamless, interactive, and personalized.
 
 ---

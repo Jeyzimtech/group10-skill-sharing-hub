@@ -1,0 +1,65 @@
+=========================================
+      SKILLS SHARING HUB - USER GUIDE
+=========================================
+
+Welcome to the Skills Sharing Hub, a premium platform designed to connect expert tutors with eager students. This guide provides an overview of how the application works, information about the development team, and how to get support.
+
+-----------------------------------------
+1. HOW THE APPLICATION WORKS
+-----------------------------------------
+
+The Skills Sharing Hub is designed to make knowledge exchange seamless and interactive. Here is the step-by-step flow:
+
+A. GETTING STARTED
+   - Account Creation: Sign up using your email and a secure password.
+   - Profile Setup: Customize your profile to showcase your interests or expertise.
+
+B. DISCOVERING SKILLS
+   - Home Dashboard: Explore featured tutors and trending categories.
+   - Search & Filter: Use the powerful search bar to find specific skills like Programming, Design, Music, or Business.
+   - Skill Categories: Browse through curated categories to find the right niche.
+
+C. CONNECTING WITH TUTORS
+   - Tutor Profiles: View detailed profiles including bios, listed skills, and community ratings.
+   - Smart Messaging: Use the built-in chat system to discuss learning goals and schedule sessions.
+   - Real-Time Synchronization: Our system ensures you are always in the right conversation thread.
+
+D. LEARNING SESSIONS
+   - Video Calling: Engage in face-to-face learning via high-quality, low-latency video calls powered by Agora.
+   - Interactive Tools: Use camera switching and microphone muting to manage your session effectively.
+
+E. FUNDA MWANA AI TUTOR
+   - 24/7 Assistance: Access the AI Study Buddy anytime for concept explanations and educational support.
+   - Floating Interface: Tap the robot icon from any screen to get instant help.
+
+F. BECOMING A TUTOR
+   - Share Knowledge: If you have a skill to share, use the 'Become a Tutor' feature to list your expertise and start helping others.
+
+-----------------------------------------
+2. DEVELOPERS
+-----------------------------------------
+
+The Skills Sharing Hub was developed by NUST Student Group 10 as a flagship project.
+
+- Lead Developers: NUST Student Group 10
+- Institution: National University of Sciences & Technology (NUST)
+- Vision: To create a collaborative ecosystem where knowledge is accessible to everyone within the community.
+
+-----------------------------------------
+3. SUPPORT & FEEDBACK
+-----------------------------------------
+
+We are committed to providing a smooth experience. If you encounter any issues:
+
+A. IN-APP SUPPORT
+   - Report a Bug: Navigate to 'Settings' > 'Support & Feedback' to report technical issues directly.
+   - Suggest Improvements: We value your feedback! Use the suggestion tool in the settings to help us improve.
+
+B. TECHNICAL SUPPORT
+   - Official Repository: https://github.com/Jeyzimtech/group10-skill-sharing-hub.git
+   - Issues: Technical bugs can be tracked on our official GitHub repository.
+   - Contact: For urgent inquiries, please reach out via the support channels listed in the application settings.
+
+-----------------------------------------
+Thank you for being part of the Skills Sharing Hub community!
+=========================================

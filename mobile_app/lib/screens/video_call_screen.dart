@@ -58,10 +58,18 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
           setState(() {
             _remoteUid = null;
           });
-          Navigator.pop(context);
+          if (mounted) Navigator.pop(context);
         },
-        onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
-          debugPrint('[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token');
+        onRemoteVideoStateChanged: (RtcConnection connection, int remoteUid, RemoteVideoState state, RemoteVideoStateReason reason, int elapsed) {
+          debugPrint("Remote video state changed: user $remoteUid, state $state, reason $reason");
+          if (state == RemoteVideoState.remoteVideoStateDecoding) {
+            setState(() {
+              _remoteUid = remoteUid;
+            });
+          }
+        },
+        onError: (ErrorCodeType err, String msg) {
+          debugPrint("Agora Error: $err, $msg");
         },
       ),
     );
@@ -74,7 +82,13 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
       token: AgoraConfig.token,
       channelId: widget.channelName,
       uid: 0,
-      options: const ChannelMediaOptions(),
+      options: const ChannelMediaOptions(
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: true,
+        publishCameraTrack: true,
+        publishMicrophoneTrack: true,
+        clientRoleType: ClientRoleType.clientRoleBroadcaster,
+      ),
     );
   }
 
@@ -132,6 +146,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   Widget _remoteVideo() {
     if (_remoteUid != null) {
       return AgoraVideoView(
+        key: ValueKey(_remoteUid),
         controller: VideoViewController.remote(
           rtcEngine: _engine,
           canvas: VideoCanvas(uid: _remoteUid),

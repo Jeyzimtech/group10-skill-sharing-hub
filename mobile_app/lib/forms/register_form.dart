@@ -3,7 +3,9 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
-import '../screens/main_navigation_screen.dart';
+import '../screens/skill_listing_screen.dart';
+import '../utils/app_colors.dart';
+
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onLoginTap;
@@ -93,7 +95,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
       );
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
         );
       }
     } on AuthException catch (e) {
@@ -120,7 +122,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   letterSpacing: 4.0,
                 ),
               ),

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../utils/app_colors.dart';
+
 class CustomButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
 
   const CustomButton({
-    super.key,
     required this.text,
-    this.onPressed,
+    required this.onPressed,
     this.isLoading = false,
+    super.key,
   });
 
   @override
@@ -27,10 +29,11 @@ class _CustomButtonState extends State<CustomButton>
     _scaleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
+      lowerBound: 0.95,
+      upperBound: 1.0,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = _scaleController;
+    _scaleController.value = 1.0;
   }
 
   @override
@@ -41,25 +44,28 @@ class _CustomButtonState extends State<CustomButton>
 
   void _onTapDown(TapDownDetails details) {
     if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.forward();
+      _scaleController.reverse();
     }
   }
 
   void _onTapUp(TapUpDetails details) {
     if (widget.onPressed != null && !widget.isLoading) {
-      _scaleController.reverse();
+      _scaleController.forward();
       widget.onPressed!();
     }
   }
 
   void _onTapCancel() {
-    _scaleController.reverse();
+    _scaleController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null;
-    const textColor = Color(0xFF0F172A); 
+    // Updated to always use dark navy text for the silver button to match Image 3
+    const textColor = Color(0xFF0B3B24); 
+
+
 
     return GestureDetector(
       onTapDown: _onTapDown,
@@ -73,25 +79,15 @@ class _CustomButtonState extends State<CustomButton>
           height: 56,
           width: widget.isLoading ? 56 : double.infinity,
           decoration: BoxDecoration(
-            gradient: isDisabled || widget.isLoading
-                ? null
-                : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFFFFFFF),
-                      Color(0xFFF0F0F0),
-                      Color(0xFFE2E2E2),
-                    ],
-                    stops: [0.0, 0.4, 1.0],
-                  ),
-            color: isDisabled ? Colors.grey.shade400.withValues(alpha: 0.5) : null,
-            borderRadius: BorderRadius.circular(widget.isLoading ? 28 : 4),
+            color: isDisabled
+                ? Colors.grey.shade400.withValues(alpha: 0.5)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(12),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 25,
                       spreadRadius: -5,
                       offset: const Offset(0, 12),
@@ -100,7 +96,7 @@ class _CustomButtonState extends State<CustomButton>
           ),
           alignment: Alignment.center,
           child: widget.isLoading
-              ? SizedBox(
+              ? const SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
@@ -113,11 +109,11 @@ class _CustomButtonState extends State<CustomButton>
                   child: Text(
                     widget.text,
                     key: ValueKey(widget.text),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: textColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 3.5,
+                      letterSpacing: 3.5, // Even wider for that premium look
                     ),
                   ),
                 ),

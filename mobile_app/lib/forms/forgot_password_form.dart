@@ -3,6 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   final VoidCallback onBackTap;
@@ -50,7 +51,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   void _submit() async {
     _validate();
-    if (_emailError != null || !_isValid) return;
+    if (!_isValid) return;
 
     setState(() { _isLoading = true; _serverError = null; });
     try {
@@ -88,13 +89,13 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9).withValues(alpha: 0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
             Icons.mark_email_read_outlined,
             size: 64,
-            color: Color(0xFF2DD4BF),
+            color: AppColors.primary,
           ),
         ),
         const SizedBox(height: 32),
@@ -103,7 +104,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: AppColors.textPrimary,
             letterSpacing: 2,
           ),
         ),
@@ -113,7 +114,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: AppColors.textPrimary.withValues(alpha: 0.6),
             height: 1.5,
           ),
         ),
@@ -142,7 +143,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             ),
             child: const Icon(
               Icons.arrow_back,
-              color: Color(0xFF1B2838),
+              color: Color(0xFF0B3B24),
               size: 20,
             ),
           ),
@@ -154,7 +155,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w400,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               letterSpacing: 4.0,
             ),
           ),
@@ -166,7 +167,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: AppColors.textPrimary.withValues(alpha: 0.5),
               fontWeight: FontWeight.w400,
             ),
           ),

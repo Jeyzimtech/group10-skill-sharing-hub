@@ -3,7 +3,9 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
-import '../screens/main_navigation_screen.dart';
+import '../screens/skill_listing_screen.dart';
+import '../utils/app_colors.dart';
+
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onRegisterTap;
@@ -66,7 +68,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
       await AuthService.login(_email, _password);
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
         );
       }
     } on AuthException catch (e) {
@@ -93,17 +95,17 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 35,
-                  backgroundColor: const Color(0xFF1B2838),
+                  backgroundColor: Colors.white,
                   child: Icon(
                     Icons.person,
                     size: 40,
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -114,7 +116,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   letterSpacing: 4.0,
                 ),
               ),
@@ -165,8 +167,9 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
                       TextSpan(
                         text: 'Click Here',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ],
@@ -196,7 +199,7 @@ class _LoginFormState extends State<LoginForm> with SingleTickerProviderStateMix
               child: TextButton(
                 onPressed: widget.onRegisterTap,
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFE0E0E0),
+                  foregroundColor: Colors.white,
                 ),
                 child: const Text(
                   'CREATE NEW ACCOUNT',

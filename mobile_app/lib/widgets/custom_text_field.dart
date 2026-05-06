@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../utils/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
@@ -8,6 +9,7 @@ class CustomTextField extends StatefulWidget {
   final String? errorText;
   final bool isSuccess;
   final ValueChanged<String>? onChanged;
+  final TextEditingController? controller;
   final TextInputType keyboardType;
   final TextInputAction textInputAction;
 
@@ -19,6 +21,7 @@ class CustomTextField extends StatefulWidget {
     this.errorText,
     this.isSuccess = false,
     this.onChanged,
+    this.controller,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
   });
@@ -62,12 +65,17 @@ class _CustomTextFieldState extends State<CustomTextField>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = widget.errorText != null;
     final activeColor = hasError
-        ? const Color(0xFFE53935)
+        ? AppColors.error
         : widget.isSuccess
-            ? const Color(0xFF43A047)
-            : const Color(0xFF2E7D32);
+            ? AppColors.success
+            : AppColors.secondary;
+    
+    final Color bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final Color textColor = isDark ? Colors.white : const Color(0xFF0B3B24);
+    final Color hintColor = textColor.withValues(alpha: 0.4);
 
     return AnimatedBuilder(
       animation: _shakeAnimation,
@@ -83,35 +91,36 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0B121A).withOpacity(0.9),
+              color: bgColor,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: hasError ? Colors.red : Colors.white.withOpacity(0.05),
+                color: hasError ? AppColors.error : AppColors.primary.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
             child: TextField(
+              controller: widget.controller,
               obscureText: _obscureText,
               onChanged: widget.onChanged,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
-              cursorColor: const Color(0xFF2DD4BF),
-              style: const TextStyle(
+              cursorColor: AppColors.primary,
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: Colors.white,
+                color: textColor,
                 letterSpacing: 0.5,
               ),
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
+                  color: hintColor,
                   fontSize: 15,
                 ),
                 prefixIcon: Icon(
                   widget.icon,
                   size: 20,
-                  color: Colors.white.withOpacity(0.8),
+                  color: AppColors.primary,
                 ),
                 suffixIcon: _buildSuffixIcon(activeColor),
                 border: InputBorder.none,
@@ -128,7 +137,7 @@ class _CustomTextFieldState extends State<CustomTextField>
               child: Text(
                 widget.errorText!,
                 style: const TextStyle(
-                  color: Color(0xFFE53935),
+                  color: AppColors.error,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

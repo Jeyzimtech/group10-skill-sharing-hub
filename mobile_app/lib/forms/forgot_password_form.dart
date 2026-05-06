@@ -3,6 +3,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../utils/validators.dart';
 import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   final VoidCallback onBackTap;
@@ -50,7 +51,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   void _submit() async {
     _validate();
-    if (_emailError != null || !_isValid) return;
+    if (!_isValid) return;
 
     setState(() { _isLoading = true; _serverError = null; });
     try {
@@ -70,137 +71,151 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: _isSuccess ? _buildSuccessState() : _buildFormState(),
+        child: _isSuccess ? _buildSuccessState(textColor, subTextColor) : _buildFormState(textColor, subTextColor, isDark),
       ),
     );
   }
 
-  Widget _buildSuccessState() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9).withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.mark_email_read_outlined,
-            size: 64,
-            color: Color(0xFF2DD4BF),
-          ),
-        ),
-        const SizedBox(height: 32),
-        const Text(
-          'CHECK YOUR EMAIL',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'We have sent recovery instructions to\n$_email',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 15,
-            color: Colors.white.withOpacity(0.6),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 48),
-        CustomButton(
-          text: 'BACK TO LOGIN',
-          onPressed: widget.onBackTap,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormState() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: widget.onBackTap,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+  Widget _buildSuccessState(Color textColor, Color subTextColor) {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.arrow_back,
-              color: Color(0xFF1B2838),
-              size: 20,
+              Icons.mark_email_read_outlined,
+              size: 64,
+              color: AppColors.primary,
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        const Center(
-          child: Text(
-            'RESET PASSWORD',
+          const SizedBox(height: 32),
+          Text(
+            'CHECK YOUR EMAIL',
             style: TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
-              letterSpacing: 4.0,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+              letterSpacing: 2,
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-        Center(
-          child: Text(
-            'Enter your email to receive recovery instructions',
+          const SizedBox(height: 16),
+          Text(
+            'We have sent recovery instructions to\n$_email',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withOpacity(0.5),
-              fontWeight: FontWeight.w400,
+              fontSize: 15,
+              color: subTextColor,
+              height: 1.5,
             ),
           ),
-        ),
-        const SizedBox(height: 40),
-        CustomTextField(
-          label: 'Email',
-          icon: Icons.mail,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.done,
-          errorText: _emailError,
-          isSuccess: _email.isNotEmpty && _emailError == null,
-          onChanged: (value) {
-            _email = value;
-            _validate();
-          },
-        ),
-        const SizedBox(height: 40),
-        CustomButton(
-          text: 'SEND INSTRUCTIONS',
-          isLoading: _isLoading,
-          onPressed: _isValid ? _submit : null,
-        ),
-        if (_serverError != null) ...[
+          const SizedBox(height: 48),
+          CustomButton(
+            text: 'BACK TO LOGIN',
+            onPressed: widget.onBackTap,
+          ),
+        ],
+      ),
+    );
+
+  }
+
+  Widget _buildFormState(Color textColor, Color subTextColor, bool isDark) {
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: widget.onBackTap,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white : Colors.grey.shade200,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Color(0xFF0B3B24),
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'RESET PASSWORD',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: textColor,
+                letterSpacing: 4.0,
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
           Center(
             child: Text(
-              _serverError!,
-              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+              'Enter your email to receive recovery instructions',
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: subTextColor,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
+          const SizedBox(height: 40),
+          CustomTextField(
+            label: 'Email',
+            icon: Icons.mail,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            errorText: _emailError,
+            isSuccess: _email.isNotEmpty && _emailError == null,
+            onChanged: (value) {
+              _email = value;
+              _validate();
+            },
+          ),
+          const SizedBox(height: 40),
+          Center(
+            child: CustomButton(
+              text: 'SEND INSTRUCTIONS',
+              isLoading: _isLoading,
+              onPressed: _isValid ? _submit : null,
+            ),
+          ),
+          if (_serverError != null) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                _serverError!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
+
   }
 }

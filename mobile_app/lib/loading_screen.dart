@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'auth_screen.dart';
+import 'utils/app_colors.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -43,6 +44,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => const AuthScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // Ultra-premium smooth entry
               const curve = Curves.fastLinearToSlowEaseIn;
               
               var fadeAnimation = CurvedAnimation(
@@ -78,7 +80,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
                 child: child,
               );
             },
-            transitionDuration: const Duration(milliseconds: 2000),
+            transitionDuration: const Duration(milliseconds: 2000), // 2 seconds for ultra-smoothness
           ),
         );
       }
@@ -94,18 +96,21 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: bgColor,
       body: Stack(
         children: [
-          _buildBackground(),
+          _buildBackground(bgColor),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildSkillNetwork3D(),
+                _buildSkillNetwork3D(isDark),
                 const SizedBox(height: 80),
-                _buildTypewriterText(),
+                _buildTypewriterText(isDark),
               ],
             ),
           ),
@@ -114,7 +119,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildSkillNetwork3D() {
+  Widget _buildSkillNetwork3D(bool isDark) {
     return AnimatedBuilder(
       animation: _rotateController,
       builder: (context, child) {
@@ -128,7 +133,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
             width: 220,
             height: 220,
             child: CustomPaint(
-              painter: NodeNetworkPainter(_rotateController.value),
+              painter: NodeNetworkPainter(_rotateController.value, isDark),
             ),
           ),
         );
@@ -136,7 +141,9 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildTypewriterText() {
+  Widget _buildTypewriterText(bool isDark) {
+    final Color textColor = isDark ? Colors.white : const Color(0xFF0B3B24);
+    
     return AnimatedBuilder(
       animation: _typewriterAnimation,
       builder: (context, child) {
@@ -148,10 +155,10 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
               child: Text(
                 displayedText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: textColor,
                   fontSize: 18,
-                  fontWeight: FontWeight.w200,
+                  fontWeight: FontWeight.w400,
                   letterSpacing: 4,
                   height: 1.5,
                 ),
@@ -172,7 +179,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
           width: 40,
           height: 2,
           decoration: BoxDecoration(
-            color: const Color(0xFF2DD4BF).withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -180,7 +187,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
         const Text(
           'CONNECTING MINDS',
           style: TextStyle(
-            color: Color(0xFF2DD4BF),
+            color: AppColors.primary,
             fontSize: 10,
             fontWeight: FontWeight.w600,
             letterSpacing: 4,
@@ -190,38 +197,31 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildBackground() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.2,
-          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-        ),
-      ),
-    );
+  Widget _buildBackground(Color bgColor) {
+    return Container(color: bgColor);
   }
 }
 
 class NodeNetworkPainter extends CustomPainter {
   final double animationValue;
-  NodeNetworkPainter(this.animationValue);
+  final bool isDark;
+  NodeNetworkPainter(this.animationValue, this.isDark);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.4)
-      ..strokeWidth = 1.2;
+      ..color = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)
+      ..strokeWidth = 1.0;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF)
+      ..color = AppColors.primary
       ..style = PaintingStyle.fill;
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2.5;
 
     final points = <Offset>[];
-    const int count = 14; 
+    const int count = 14; // Slightly more nodes for density
     for (var i = 0; i < count; i++) {
       final phi = acos(-1 + (2 * i) / count);
       final theta = sqrt(count * pi) * phi;
@@ -235,7 +235,8 @@ class NodeNetworkPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < radius * 1.6) {
           final opacity = (1 - (distance / (radius * 1.6))).clamp(0.0, 1.0);
-          paint.color = const Color(0xFF2DD4BF).withOpacity(opacity * 0.3);
+          final color = i % 3 == 0 ? AppColors.secondary : AppColors.primary;
+          paint.color = color.withValues(alpha: opacity * 0.3);
           canvas.drawLine(points[i], points[j], paint);
         }
       }

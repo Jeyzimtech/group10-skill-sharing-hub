@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/skill.dart';
 import '../utils/skill_service.dart';
-import '../screens/skill_category_screen.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_text_field.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/cloudinary_service.dart';
 
 class SkillPostScreen extends StatefulWidget {
   const SkillPostScreen({super.key});
@@ -12,31 +18,56 @@ class SkillPostScreen extends StatefulWidget {
 
 class _SkillPostScreenState extends State<SkillPostScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  String _selectedCategory = 'Programming';
+  final _titleController = TextEditingController();
+  final _descController = TextEditingController();
+  String _category = 'Programming';
   bool _isLoading = false;
+  String? _imageUrl;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _isLoading = true);
+      final url = await CloudinaryService().uploadImage(File(image.path));
+      setState(() {
+        _imageUrl = url;
+        _isLoading = false;
+      });
+      if (url == null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload image'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
-    _nameController.dispose();
+    _descController.dispose();
     super.dispose();
   }
 
-  Future<void> _submitSkill() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  void _submitSkill() async {
     setState(() => _isLoading = true);
+    
+    final user = FirebaseAuth.instance.currentUser;
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
+    final userData = userDoc.data() ?? {};
+    final name = userData['name'] ?? user?.displayName ?? 'User';
+    final posterPhotoUrl = userData['photoUrl'] ?? user?.photoURL;
+
 
     final skill = Skill(
       id: '',
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      category: _selectedCategory,
-      postedBy: _nameController.text.trim(),
+      userId: user?.uid ?? '',
+      title: _titleController.text,
+      description: _descController.text,
+      category: _category,
+      postedBy: name,
+      imageUrl: _imageUrl,
+      posterPhotoUrl: posterPhotoUrl,
       createdAt: DateTime.now(),
     );
 
@@ -44,7 +75,8 @@ class _SkillPostScreenState extends State<SkillPostScreen> {
 
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Skill posted successfully!'),
@@ -62,166 +94,143 @@ class _SkillPostScreenState extends State<SkillPostScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white70 : Colors.black54;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        title: Text('Post New Skill', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF2DD4BF)),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Post a Skill',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Share what you can teach',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Your Name
-              _buildLabel('Your Name'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _nameController,
-                hint: 'e.g. Mthabisi',
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Enter your name' : null,
-              ),
-              const SizedBox(height: 20),
-
-              // Skill Title
-              _buildLabel('Skill Title'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _titleController,
-                hint: 'e.g. Python Programming',
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Enter a skill title' : null,
-              ),
-              const SizedBox(height: 20),
-
-              // Description
-              _buildLabel('Description'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _descriptionController,
-                hint: 'Describe what you can teach and your experience...',
-                maxLines: 4,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Enter a description' : null,
-              ),
-              const SizedBox(height: 20),
-
-              // Category
-              _buildLabel('Category'),
-              const SizedBox(height: 12),
-              SkillCategoryScreen(
-                selectedCategory: _selectedCategory,
-                onCategorySelected: (category) {
-                  setState(() => _selectedCategory = category);
-                },
-              ),
-              const SizedBox(height: 40),
-
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitSkill,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2DD4BF),
-                    disabledBackgroundColor:
-                        const Color(0xFF2DD4BF).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'What skill can you share?',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Post Skill',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                  const SizedBox(height: 32),
+                  
+                  // Image Picker
+                  Center(
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: textColor.withValues(alpha: 0.1)),
+                          image: _imageUrl != null
+                              ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
+                              : null,
                         ),
+                        child: _imageUrl == null
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo, color: subTextColor, size: 40),
+                                  const SizedBox(height: 8),
+                                  Text('Add a Skill Photo', style: TextStyle(color: subTextColor)),
+                                ],
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  CustomTextField(
+                    label: 'Skill Title',
+                    icon: Icons.title,
+                    controller: _titleController,
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  Text(
+                    'Category',
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: textColor.withValues(alpha: 0.1)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _category,
+                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        isExpanded: true,
+                        style: TextStyle(color: textColor),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF2DD4BF)),
+                        items: <String>['Programming', 'Music', 'Academic', 'Design', 'Language', 'Sports', 'Other']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) setState(() => _category = newValue);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  CustomTextField(
+                    label: 'Description',
+                    icon: Icons.description,
+                    controller: _descController,
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  Center(
+                    child: CustomButton(
+                      text: 'Post Skill',
+                      isLoading: _isLoading,
+                      onPressed: _submitSkill,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.3),
+                child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF2DD4BF)),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white70,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      style: const TextStyle(color: Colors.white),
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38),
-        filled: true,
-        fillColor: const Color(0xFF1E293B),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.1),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Color(0xFF2DD4BF),
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent),
-        ),
+            ),
+        ],
       ),
     );
   }

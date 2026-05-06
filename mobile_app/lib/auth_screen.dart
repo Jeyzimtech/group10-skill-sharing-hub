@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'forms/login_form.dart';
 import 'forms/register_form.dart';
 import 'forms/forgot_password_form.dart';
+import 'utils/app_colors.dart';
 
 enum AuthMode { login, register, forgotPassword }
 
@@ -21,6 +22,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   
   late Animation<double> _flipAnimation;
   late Animation<double> _forgotAnimation;
+  late AnimationController _bgController;
   
   AuthMode _mode = AuthMode.login;
   bool _showRegisterSide = false;
@@ -31,25 +33,25 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     super.initState();
     _flipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
 
     _forgotController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
 
     _flipAnimation = Tween<double>(begin: 0, end: pi).animate(
       CurvedAnimation(
         parent: _flipController,
-        curve: Curves.easeInOutCubic,
+        curve: Curves.easeInOutQuart,
       ),
     );
 
     _forgotAnimation = Tween<double>(begin: 0, end: pi).animate(
       CurvedAnimation(
         parent: _forgotController,
-        curve: Curves.easeInOutCubic,
+        curve: Curves.easeInOutQuart,
       ),
     );
 
@@ -84,12 +86,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         }
       }
     });
+
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
   }
 
   @override
   void dispose() {
     _flipController.dispose();
     _forgotController.dispose();
+    _bgController.dispose();
     super.dispose();
   }
 
@@ -119,19 +127,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: bgColor,
       body: Stack(
         children: [
-          _buildNexusBackground(),
-          _buildMainContainer(),
+          _buildNexusBackground(bgColor, isDark),
+          _buildMainContainer(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildMainContainer() {
+  Widget _buildMainContainer(bool isDark) {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = screenWidth * 0.92;
 
@@ -153,20 +164,21 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: _getCurrentSide(cardWidth),
+            child: _getCurrentSide(cardWidth, isDark),
           );
         },
       ),
     );
   }
 
-  Widget _getCurrentSide(double cardWidth) {
+  Widget _getCurrentSide(double cardWidth, bool isDark) {
     if (_showForgotSide) {
       return Transform(
         transform: Matrix4.identity()..rotateX(pi),
         alignment: Alignment.center,
         child: _buildGlassCard(
           width: cardWidth,
+          isDark: isDark,
           child: ForgotPasswordForm(onBackTap: _backFromForgot),
         ),
       );
@@ -178,6 +190,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         alignment: Alignment.center,
         child: _buildGlassCard(
           width: cardWidth,
+          isDark: isDark,
           child: RegisterForm(onLoginTap: _toggleFlip),
         ),
       );
@@ -185,6 +198,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     return _buildGlassCard(
       width: cardWidth,
+      isDark: isDark,
       child: LoginForm(
         onRegisterTap: _toggleFlip,
         onForgotPasswordTap: _switchToForgotPassword,
@@ -192,7 +206,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildGlassCard({required double width, required Widget child}) {
+  Widget _buildGlassCard({required double width, required Widget child, required bool isDark}) {
+    final Color cardColor = isDark ? AppColors.surface : Colors.white;
+    final double borderOpacity = isDark ? 1.0 : 0.2;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -201,55 +218,45 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           width: width,
           padding: const EdgeInsets.fromLTRB(10, 30, 10, 20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF2DD4BF).withOpacity(0.12),
-                const Color(0xFF0F172A).withOpacity(0.4),
-              ],
-            ),
+            color: cardColor.withValues(alpha: isDark ? 0.9 : 0.7),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFF2DD4BF).withOpacity(0.2),
-              width: 1.0,
+              color: AppColors.primary.withValues(alpha: borderOpacity),
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withOpacity(0.05),
+                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
                 blurRadius: 0,
                 offset: const Offset(0, -1),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 50,
-                spreadRadius: -10,
-                offset: const Offset(0, 30),
+                color: AppColors.primary.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: child,
+          child: SingleChildScrollView(
+            child: child,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNexusBackground() {
+  Widget _buildNexusBackground(Color bgColor, bool isDark) {
     return Stack(
       children: [
-        Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0.5, -0.5),
-              radius: 1.5,
-              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: CustomPaint(
-            painter: NexusPainter(),
-          ),
+        Container(color: bgColor),
+        AnimatedBuilder(
+          animation: _bgController,
+          builder: (context, child) {
+            return CustomPaint(
+              size: Size.infinite,
+              painter: NexusPainter(_bgController.value, isDark),
+            );
+          },
         ),
       ],
     );
@@ -257,35 +264,46 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 }
 
 class NexusPainter extends CustomPainter {
+  final double animationValue;
+  final bool isDark;
+  NexusPainter(this.animationValue, this.isDark);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.08)
-      ..strokeWidth = 0.8;
+      ..strokeWidth = 1.0;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2DD4BF).withOpacity(0.2)
+      ..color = AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.5)
       ..style = PaintingStyle.fill;
 
     final points = [
-      const Offset(50, 100), const Offset(150, 50), const Offset(250, 150),
-      const Offset(100, 300), const Offset(300, 400), const Offset(50, 500),
-      const Offset(200, 600), const Offset(350, 200), const Offset(100, 700),
-      const Offset(300, 800),
+      Offset(size.width * 0.1, size.height * 0.1 + sin(animationValue * 2 * pi) * 20),
+      Offset(size.width * 0.3, size.height * 0.05 + cos(animationValue * 2 * pi) * 15),
+      Offset(size.width * 0.6, size.height * 0.15 + sin(animationValue * 2 * pi) * 25),
+      Offset(size.width * 0.8, size.height * 0.08 + cos(animationValue * 2 * pi) * 10),
+      Offset(size.width * 0.2, size.height * 0.4 + sin(animationValue * 2 * pi) * 30),
+      Offset(size.width * 0.7, size.height * 0.5 + cos(animationValue * 2 * pi) * 20),
+      Offset(size.width * 0.1, size.height * 0.7 + sin(animationValue * 2 * pi) * 15),
+      Offset(size.width * 0.4, size.height * 0.8 + cos(animationValue * 2 * pi) * 25),
+      Offset(size.width * 0.8, size.height * 0.9 + sin(animationValue * 2 * pi) * 20),
+      Offset(size.width * 0.5, size.height * 0.3 + cos(animationValue * 2 * pi) * 15),
     ];
 
     for (var i = 0; i < points.length; i++) {
       for (var j = i + 1; j < points.length; j++) {
         final distance = (points[i] - points[j]).distance;
-        if (distance < 250) {
-          paint.color = const Color(0xFF2DD4BF).withOpacity((1 - distance / 250) * 0.1);
+        if (distance < size.width * 0.6) {
+          paint.color = AppColors.primary.withValues(
+            alpha: (1 - distance / (size.width * 0.6)) * (isDark ? 0.15 : 0.25),
+          );
           canvas.drawLine(points[i], points[j], paint);
         }
       }
-      canvas.drawCircle(points[i], 1.2, dotPaint);
+      canvas.drawCircle(points[i], 1.5, dotPaint);
     }
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(NexusPainter oldDelegate) => true;
 }

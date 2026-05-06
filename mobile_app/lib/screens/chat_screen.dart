@@ -156,6 +156,36 @@ class _ChatScreenState extends State<ChatScreen> {
                   fontSize: 15,
                 ),
               ),
+              if (!isMe && text.contains("video call"))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      final String myId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                      final List<String> ids = [myId, widget.otherUserId]..sort();
+                      final String channelName = ids.join('_');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VideoCallScreen(
+                            channelName: channelName,
+                            userName: widget.otherUserName,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.videocam, size: 16),
+                    label: const Text("JOIN CALL", style: TextStyle(letterSpacing: 1)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: const Color(0xFF0B1E3A),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      minimumSize: const Size(0, 32),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 4),
               Text(
                 timestamp != null 

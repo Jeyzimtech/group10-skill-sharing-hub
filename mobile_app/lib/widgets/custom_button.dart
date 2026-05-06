@@ -61,33 +61,41 @@ class _CustomButtonState extends State<CustomButton>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final isDisabled = widget.onPressed == null;
-    // Updated to always use dark navy text for the silver button to match Image 3
-    const textColor = Color(0xFF0B3B24); 
+    
+    // For premium feel: 
+    // In dark mode, keep the "silver/white" look on dark navy background
+    // In light mode, use the primary mint color with dark text
+    final Color buttonColor = isDisabled
+        ? Colors.grey.shade400.withValues(alpha: 0.5)
+        : (isDark ? Colors.white : AppColors.primary);
+        
+    const Color textColor = Color(0xFF0B3B24); 
 
-
-
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          height: 56,
-          width: widget.isLoading ? 56 : double.infinity,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        
+        return GestureDetector(
+          onTapDown: _onTapDown,
+          onTapUp: _onTapUp,
+          onTapCancel: _onTapCancel,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: 56,
+              width: widget.isLoading ? 56 : maxWidth,
           decoration: BoxDecoration(
-            color: isDisabled
-                ? Colors.grey.shade400.withValues(alpha: 0.5)
-                : Colors.white,
+            color: buttonColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: isDisabled || widget.isLoading
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: (isDark ? Colors.white : AppColors.primary).withValues(alpha: 0.3),
                       blurRadius: 25,
                       spreadRadius: -5,
                       offset: const Offset(0, 12),
@@ -96,7 +104,7 @@ class _CustomButtonState extends State<CustomButton>
           ),
           alignment: Alignment.center,
           child: widget.isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
@@ -113,12 +121,14 @@ class _CustomButtonState extends State<CustomButton>
                       color: textColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 3.5, // Even wider for that premium look
+                      letterSpacing: 3.5,
                     ),
                   ),
                 ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

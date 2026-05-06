@@ -9,6 +9,7 @@ class CustomTextField extends StatefulWidget {
   final String? errorText;
   final bool isSuccess;
   final ValueChanged<String>? onChanged;
+  final TextEditingController? controller;
   final TextInputType keyboardType;
   final TextInputAction textInputAction;
 
@@ -20,6 +21,7 @@ class CustomTextField extends StatefulWidget {
     this.errorText,
     this.isSuccess = false,
     this.onChanged,
+    this.controller,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
   });
@@ -63,12 +65,17 @@ class _CustomTextFieldState extends State<CustomTextField>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = widget.errorText != null;
     final activeColor = hasError
         ? AppColors.error
         : widget.isSuccess
             ? AppColors.success
             : AppColors.secondary;
+    
+    final Color bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final Color textColor = isDark ? Colors.white : const Color(0xFF0B3B24);
+    final Color hintColor = textColor.withValues(alpha: 0.4);
 
     return AnimatedBuilder(
       animation: _shakeAnimation,
@@ -84,7 +91,7 @@ class _CustomTextFieldState extends State<CustomTextField>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: bgColor,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: hasError ? AppColors.error : AppColors.primary.withValues(alpha: 0.2),
@@ -92,21 +99,22 @@ class _CustomTextFieldState extends State<CustomTextField>
               ),
             ),
             child: TextField(
+              controller: widget.controller,
               obscureText: _obscureText,
               onChanged: widget.onChanged,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
               cursorColor: AppColors.primary,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF0B3B24),
+                color: textColor,
                 letterSpacing: 0.5,
               ),
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: const Color(0xFF0B3B24).withValues(alpha: 0.4),
+                  color: hintColor,
                   fontSize: 15,
                 ),
                 prefixIcon: Icon(

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
-import '../utils/validators.dart';
 import '../services/auth_service.dart';
-import '../screens/skill_listing_screen.dart';
-import '../utils/app_colors.dart';
+import '../screens/main_navigation_screen.dart';
 
 
 class RegisterForm extends StatefulWidget {
@@ -53,36 +51,8 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
     super.dispose();
   }
 
-  void _validate() {
-    setState(() {
-      _nameError = _name.isEmpty ? null : Validators.validateName(_name);
-      _emailError = _email.isEmpty ? null : Validators.validateEmail(_email);
-      _dobError = _dob.isEmpty ? null : (_dob.length < 5 ? 'Invalid date' : null);
-      _studentNumberError = _studentNumber.isEmpty ? null : (_studentNumber.length < 4 ? 'Invalid number' : null);
-      _passwordError = _password.isEmpty ? null : Validators.validatePassword(_password);
-      _confirmPasswordError = _confirmPassword.isEmpty 
-          ? null 
-          : (_confirmPassword != _password ? 'Passwords do not match' : null);
-    });
-  }
-
-  bool get _isValid =>
-      _name.isNotEmpty &&
-      _email.isNotEmpty &&
-      _dob.isNotEmpty &&
-      _studentNumber.isNotEmpty &&
-      _password.isNotEmpty &&
-      _confirmPassword.isNotEmpty &&
-      _nameError == null &&
-      _emailError == null &&
-      _dobError == null &&
-      _studentNumberError == null &&
-      _passwordError == null &&
-      _confirmPasswordError == null;
-
   void _submit() async {
-    _validate();
-    if (!_isValid) return;
+    if (_name.isEmpty || _email.isEmpty || _password.isEmpty) return;
 
     setState(() { _isLoading = true; _serverError = null; });
     try {
@@ -95,7 +65,7 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
       );
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SkillListingScreen()),
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
         );
       }
     } on AuthException catch (e) {
@@ -107,141 +77,139 @@ class _RegisterFormState extends State<RegisterForm> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
-            const Center(
-              child: Text(
-                'CREATE ACCOUNT',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textPrimary,
-                  letterSpacing: 4.0,
-                ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Text(
+                      'CREATE ACCOUNT',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        color: textColor,
+                        letterSpacing: 4.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  CustomTextField(
+                    label: 'Full Name',
+                    icon: Icons.person,
+                    errorText: _nameError,
+                    isSuccess: _name.isNotEmpty && _nameError == null,
+                    onChanged: (value) => _name = value,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Email Address',
+                    icon: Icons.mail,
+                    keyboardType: TextInputType.emailAddress,
+                    errorText: _emailError,
+                    isSuccess: _email.isNotEmpty && _emailError == null,
+                    onChanged: (value) => _email = value,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          label: 'DOB (DD/MM/YY)',
+                          icon: Icons.calendar_today,
+                          errorText: _dobError,
+                          isSuccess: _dob.isNotEmpty && _dobError == null,
+                          onChanged: (value) => _dob = value,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: CustomTextField(
+                          label: 'Student ID',
+                          icon: Icons.badge,
+                          errorText: _studentNumberError,
+                          isSuccess: _studentNumber.isNotEmpty && _studentNumberError == null,
+                          onChanged: (value) => _studentNumber = value,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Password',
+                    icon: Icons.lock,
+                    isPassword: true,
+                    errorText: _passwordError,
+                    isSuccess: _password.isNotEmpty && _passwordError == null,
+                    onChanged: (value) => _password = value,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Confirm Password',
+                    icon: Icons.lock,
+                    isPassword: true,
+                    textInputAction: TextInputAction.done,
+                    errorText: _confirmPasswordError,
+                    isSuccess: _confirmPassword.isNotEmpty && _confirmPasswordError == null,
+                    onChanged: (value) => _confirmPassword = value,
+                  ),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: CustomButton(
+                      text: 'SIGN UP',
+                      isLoading: _isLoading,
+                      onPressed: _submit,
+                    ),
+                  ),
+                  if (_serverError != null) ...[
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Text(
+                        _serverError!,
+                        style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      onPressed: widget.onLoginTap,
+                      style: TextButton.styleFrom(
+                        foregroundColor: textColor,
+                      ),
+                      child: Text(
+                        'ALREADY REGISTERED? SIGN IN',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
-            CustomTextField(
-              label: 'Full Name',
-              icon: Icons.person,
-              errorText: _nameError,
-              isSuccess: _name.isNotEmpty && _nameError == null,
-              onChanged: (value) {
-                _name = value;
-                _validate();
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              label: 'Email Address',
-              icon: Icons.mail,
-              keyboardType: TextInputType.emailAddress,
-              errorText: _emailError,
-              isSuccess: _email.isNotEmpty && _emailError == null,
-              onChanged: (value) {
-                _email = value;
-                _validate();
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    label: 'DOB (DD/MM/YY)',
-                    icon: Icons.calendar_today,
-                    errorText: _dobError,
-                    isSuccess: _dob.isNotEmpty && _dobError == null,
-                    onChanged: (value) {
-                      _dob = value;
-                      _validate();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: CustomTextField(
-                    label: 'Student ID',
-                    icon: Icons.badge,
-                    errorText: _studentNumberError,
-                    isSuccess: _studentNumber.isNotEmpty && _studentNumberError == null,
-                    onChanged: (value) {
-                      _studentNumber = value;
-                      _validate();
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              label: 'Password',
-              icon: Icons.lock,
-              isPassword: true,
-              errorText: _passwordError,
-              isSuccess: _password.isNotEmpty && _passwordError == null,
-              onChanged: (value) {
-                _password = value;
-                _validate();
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              label: 'Confirm Password',
-              icon: Icons.lock,
-              isPassword: true,
-              textInputAction: TextInputAction.done,
-              errorText: _confirmPasswordError,
-              isSuccess: _confirmPassword.isNotEmpty && _confirmPasswordError == null,
-              onChanged: (value) {
-                _confirmPassword = value;
-                _validate();
-              },
-            ),
-            const SizedBox(height: 32),
-            CustomButton(
-              text: 'SIGN UP',
-              isLoading: _isLoading,
-              onPressed: _isValid ? _submit : null,
-            ),
-            if (_serverError != null) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  _serverError!,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-            const SizedBox(height: 32),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: widget.onLoginTap,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white.withValues(alpha: 0.8),
-                ),
-                child: const Text(
-                  'ALREADY REGISTERED? SIGN IN',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+
+        ],
       ),
     );
   }
 }
+

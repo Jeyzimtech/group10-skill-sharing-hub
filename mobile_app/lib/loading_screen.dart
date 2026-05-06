@@ -96,18 +96,21 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: bgColor,
       body: Stack(
         children: [
-          _buildBackground(),
+          _buildBackground(bgColor),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildSkillNetwork3D(),
+                _buildSkillNetwork3D(isDark),
                 const SizedBox(height: 80),
-                _buildTypewriterText(),
+                _buildTypewriterText(isDark),
               ],
             ),
           ),
@@ -116,7 +119,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildSkillNetwork3D() {
+  Widget _buildSkillNetwork3D(bool isDark) {
     return AnimatedBuilder(
       animation: _rotateController,
       builder: (context, child) {
@@ -130,7 +133,7 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
             width: 220,
             height: 220,
             child: CustomPaint(
-              painter: NodeNetworkPainter(_rotateController.value),
+              painter: NodeNetworkPainter(_rotateController.value, isDark),
             ),
           ),
         );
@@ -138,7 +141,9 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildTypewriterText() {
+  Widget _buildTypewriterText(bool isDark) {
+    final Color textColor = isDark ? Colors.white : const Color(0xFF0B3B24);
+    
     return AnimatedBuilder(
       animation: _typewriterAnimation,
       builder: (context, child) {
@@ -150,8 +155,8 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
               child: Text(
                 displayedText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF0B3B24),
+                style: TextStyle(
+                  color: textColor,
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
                   letterSpacing: 4,
@@ -192,19 +197,20 @@ class _LoadingScreenState extends State<LoadingScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildBackground() {
-    return Container(color: Colors.white);
+  Widget _buildBackground(Color bgColor) {
+    return Container(color: bgColor);
   }
 }
 
 class NodeNetworkPainter extends CustomPainter {
   final double animationValue;
-  NodeNetworkPainter(this.animationValue);
+  final bool isDark;
+  NodeNetworkPainter(this.animationValue, this.isDark);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.1)
+      ..color = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)
       ..strokeWidth = 1.0;
 
     final dotPaint = Paint()

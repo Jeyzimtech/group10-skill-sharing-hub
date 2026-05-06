@@ -127,19 +127,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.background,
+      backgroundColor: bgColor,
       body: Stack(
         children: [
-          _buildNexusBackground(),
-          _buildMainContainer(),
+          _buildNexusBackground(bgColor, isDark),
+          _buildMainContainer(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildMainContainer() {
+  Widget _buildMainContainer(bool isDark) {
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = screenWidth * 0.92;
 
@@ -149,10 +152,6 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         builder: (context, child) {
           final flipAngle = _flipAnimation.value;
           final forgotAngle = _forgotAnimation.value;
-          
-          // Determine which axis to rotate on
-          // If we are doing forgot password, use X axis rotation (Vertical Flip)
-          // If we are doing register, use Y axis rotation (Horizontal Flip)
           
           Matrix4 transform = Matrix4.identity()..setEntry(3, 2, 0.001);
           
@@ -165,41 +164,41 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           return Transform(
             transform: transform,
             alignment: Alignment.center,
-            child: _getCurrentSide(cardWidth),
+            child: _getCurrentSide(cardWidth, isDark),
           );
         },
       ),
     );
   }
 
-  Widget _getCurrentSide(double cardWidth) {
+  Widget _getCurrentSide(double cardWidth, bool isDark) {
     if (_showForgotSide) {
-      // Back side of X-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateX(pi),
         alignment: Alignment.center,
         child: _buildGlassCard(
           width: cardWidth,
+          isDark: isDark,
           child: ForgotPasswordForm(onBackTap: _backFromForgot),
         ),
       );
     }
     
     if (_showRegisterSide) {
-      // Back side of Y-axis flip
       return Transform(
         transform: Matrix4.identity()..rotateY(pi),
         alignment: Alignment.center,
         child: _buildGlassCard(
           width: cardWidth,
+          isDark: isDark,
           child: RegisterForm(onLoginTap: _toggleFlip),
         ),
       );
     }
 
-    // Front side (Login)
     return _buildGlassCard(
       width: cardWidth,
+      isDark: isDark,
       child: LoginForm(
         onRegisterTap: _toggleFlip,
         onForgotPasswordTap: _switchToForgotPassword,
@@ -207,7 +206,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildGlassCard({required double width, required Widget child}) {
+  Widget _buildGlassCard({required double width, required Widget child, required bool isDark}) {
+    final Color cardColor = isDark ? AppColors.surface : Colors.white;
+    final double borderOpacity = isDark ? 1.0 : 0.2;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -216,48 +218,43 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           width: width,
           padding: const EdgeInsets.fromLTRB(10, 30, 10, 20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface,
-                AppColors.surface,
-              ],
-            ),
+            color: cardColor.withValues(alpha: isDark ? 0.9 : 0.7),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: AppColors.primary,
+              color: AppColors.primary.withValues(alpha: borderOpacity),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
                 blurRadius: 0,
                 offset: const Offset(0, -1),
               ),
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.05),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: child,
+          child: SingleChildScrollView(
+            child: child,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNexusBackground() {
+  Widget _buildNexusBackground(Color bgColor, bool isDark) {
     return Stack(
       children: [
-        Container(color: Colors.white),
+        Container(color: bgColor),
         AnimatedBuilder(
           animation: _bgController,
           builder: (context, child) {
             return CustomPaint(
               size: Size.infinite,
-              painter: NexusPainter(_bgController.value),
+              painter: NexusPainter(_bgController.value, isDark),
             );
           },
         ),
@@ -268,7 +265,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
 class NexusPainter extends CustomPainter {
   final double animationValue;
-  NexusPainter(this.animationValue);
+  final bool isDark;
+  NexusPainter(this.animationValue, this.isDark);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -276,7 +274,7 @@ class NexusPainter extends CustomPainter {
       ..strokeWidth = 1.0;
 
     final dotPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.3)
+      ..color = AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.5)
       ..style = PaintingStyle.fill;
 
     final points = [
@@ -297,7 +295,7 @@ class NexusPainter extends CustomPainter {
         final distance = (points[i] - points[j]).distance;
         if (distance < size.width * 0.6) {
           paint.color = AppColors.primary.withValues(
-            alpha: (1 - distance / (size.width * 0.6)) * 0.15,
+            alpha: (1 - distance / (size.width * 0.6)) * (isDark ? 0.15 : 0.25),
           );
           canvas.drawLine(points[i], points[j], paint);
         }

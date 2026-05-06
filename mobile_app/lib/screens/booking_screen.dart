@@ -3,13 +3,16 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'main_navigation_screen.dart';
+import '../services/chat_service.dart';
 
 class BookingScreen extends StatefulWidget {
+  final String tutorUid;
   final String tutorName;
   final String skill;
 
   const BookingScreen({
     super.key,
+    required this.tutorUid,
     required this.tutorName,
     required this.skill,
   });
@@ -19,7 +22,6 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final Color _bg = const Color(0xFF0B1E3A);
   final Color _accent = const Color(0xFF00E5A0);
   final Color _cardBg = const Color(0xFF122240);
 
@@ -28,36 +30,6 @@ class _BookingScreenState extends State<BookingScreen> {
   String _sessionType = 'Online'; // Default
 
   final List<String> _timeSlots = ['09:00 AM', '11:00 AM', '02:00 PM', '04:00 PM'];
-
-  Future<void> _pickDate() async {
-    final DateTime now = DateTime.now();
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? now.add(const Duration(days: 1)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 60)),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: _accent,
-              onPrimary: _bg,
-              surface: _cardBg,
-              onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: _bg,
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
 
   Future<void> _confirmBooking() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -69,16 +41,30 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     try {
+      // Find the tutor's UID from the 'tutors' collection based on their name (for now, or ideally passed in)
+      // Since we might not have it, let's assume we need to pass it or look it up.
+      // For this step, I'll assume we should have passed it. I'll update the constructor next.
+      final tutorUid = widget.tutorUid; 
+
       await FirebaseFirestore.instance.collection('sessions').add({
         'userId': user.uid,
+        'userName': user.displayName ?? 'Student',
+        'tutorUid': tutorUid,
         'tutorName': widget.tutorName,
         'skill': widget.skill,
-        'date': _selectedDate!.toIso8601String(),
-        'time': _selectedTime,
+        'date': (_selectedDate ?? DateTime.now()).toIso8601String(),
+        'time': _selectedTime ?? 'ASAP',
         'status': 'upcoming',
         'type': _sessionType,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Send automated message to tutor
+      final dateStr = DateFormat('MMM dd').format(_selectedDate ?? DateTime.now());
+      await ChatService.sendMessage(
+        tutorUid, 
+        'Hi ${widget.tutorName}! I just booked a ${_sessionType.toLowerCase()} session for ${widget.skill} on $dateStr at ${_selectedTime ?? 'ASAP'}. Looking forward to it!',
+      );
 
       if (!mounted) return;
 
@@ -132,12 +118,25 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color cardColor = isDark ? const Color(0xFF122240) : Colors.white;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
+
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Book Session', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: textColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Book Session', 
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold)
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -157,9 +156,9 @@ class _BookingScreenState extends State<BookingScreen> {
                           height: 50,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200,
                           ),
-                          child: const Icon(Icons.person, color: Colors.white70),
+                          child: Icon(Icons.person, color: subTextColor),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -168,8 +167,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             children: [
                               Text(
                                 widget.tutorName,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: textColor,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -178,7 +177,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               Text(
                                 widget.skill,
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: subTextColor,
                                   fontSize: 14,
                                 ),
                               ),
@@ -190,33 +189,54 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(height: 40),
 
                     // Date Selection
-                    const Text(
+                    Text(
                       'Select Date',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
                     GestureDetector(
-                      onTap: _pickDate,
+                      onTap: () async {
+                        final DateTime now = DateTime.now();
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate ?? now.add(const Duration(days: 1)),
+                          firstDate: now,
+                          lastDate: now.add(const Duration(days: 60)),
+                        );
+
+                        if (picked != null && picked != _selectedDate) {
+                          setState(() {
+                            _selectedDate = picked;
+                          });
+                        }
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(
-                          color: _cardBg,
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: _selectedDate != null 
                                 ? _accent.withValues(alpha: 0.5) 
-                                : Colors.white.withValues(alpha: 0.1),
+                                : textColor.withValues(alpha: 0.1),
                           ),
+                          boxShadow: isDark ? [] : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.calendar_month,
-                              color: _selectedDate != null ? _accent : Colors.white54,
+                              color: _selectedDate != null ? _accent : subTextColor,
                             ),
                             const SizedBox(width: 12),
                             Text(
@@ -224,7 +244,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   ? DateFormat('EEEE, MMM d, yyyy').format(_selectedDate!)
                                   : 'Choose a date',
                               style: TextStyle(
-                                color: _selectedDate != null ? Colors.white : Colors.white54,
+                                color: _selectedDate != null ? textColor : subTextColor,
                                 fontSize: 16,
                                 fontWeight: _selectedDate != null ? FontWeight.w600 : FontWeight.normal,
                               ),
@@ -236,10 +256,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(height: 32),
 
                     // Time Selection
-                    const Text(
+                    Text(
                       'Select Time',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -260,19 +280,26 @@ class _BookingScreenState extends State<BookingScreen> {
                             duration: const Duration(milliseconds: 200),
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                             decoration: BoxDecoration(
-                              color: isSelected ? _accent.withValues(alpha: 0.15) : _cardBg,
+                              color: isSelected ? _accent.withValues(alpha: 0.15) : cardColor,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected 
                                     ? _accent 
-                                    : Colors.white.withValues(alpha: 0.1),
+                                    : textColor.withValues(alpha: 0.1),
                                 width: isSelected ? 2 : 1,
                               ),
+                              boxShadow: (isSelected || isDark) ? [] : [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                )
+                              ],
                             ),
                             child: Text(
                               time,
                               style: TextStyle(
-                                color: isSelected ? _accent : Colors.white70,
+                                color: isSelected ? _accent : textColor,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                 fontSize: 14,
                               ),
@@ -284,10 +311,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(height: 32),
 
                     // Session Type
-                    const Text(
+                    Text(
                       'Session Type',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -295,9 +322,9 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        _buildSessionTypeOption('Online', Icons.video_camera_front),
+                        _buildSessionTypeOption('Online', Icons.video_camera_front, isDark, textColor, subTextColor, cardColor),
                         const SizedBox(width: 16),
-                        _buildSessionTypeOption('In-person', Icons.people),
+                        _buildSessionTypeOption('In-person', Icons.people, isDark, textColor, subTextColor, cardColor),
                       ],
                     ),
                     const SizedBox(height: 40),
@@ -310,15 +337,15 @@ class _BookingScreenState extends State<BookingScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: _bg,
+                color: bgColor,
                 border: Border(
                   top: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: textColor.withValues(alpha: 0.05),
                   ),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                     offset: const Offset(0, -4),
                     blurRadius: 16,
                   ),
@@ -328,14 +355,12 @@ class _BookingScreenState extends State<BookingScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: (_selectedDate != null && _selectedTime != null)
-                      ? _confirmBooking
-                      : null,
+                  onPressed: _confirmBooking,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accent,
-                    disabledBackgroundColor: Colors.white.withValues(alpha: 0.1),
-                    foregroundColor: _bg,
-                    disabledForegroundColor: Colors.white.withValues(alpha: 0.3),
+                    disabledBackgroundColor: textColor.withValues(alpha: 0.1),
+                    foregroundColor: const Color(0xFF0B1E3A),
+                    disabledForegroundColor: textColor.withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -358,7 +383,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildSessionTypeOption(String type, IconData icon) {
+  Widget _buildSessionTypeOption(String type, IconData icon, bool isDark, Color textColor, Color subTextColor, Color cardBg) {
     final isSelected = _sessionType == type;
     
     return Expanded(
@@ -372,25 +397,32 @@ class _BookingScreenState extends State<BookingScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected ? _accent.withValues(alpha: 0.1) : _cardBg,
+            color: isSelected ? _accent.withValues(alpha: 0.1) : cardBg,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? _accent.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05),
+              color: isSelected ? _accent.withValues(alpha: 0.5) : textColor.withValues(alpha: 0.05),
               width: 1,
             ),
+            boxShadow: (isSelected || isDark) ? [] : [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ],
           ),
           child: Column(
             children: [
               Icon(
                 icon,
-                color: isSelected ? _accent : Colors.white54,
+                color: isSelected ? _accent : subTextColor,
                 size: 28,
               ),
               const SizedBox(height: 8),
               Text(
                 type,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white54,
+                  color: isSelected ? textColor : subTextColor,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),

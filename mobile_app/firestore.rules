@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profiles
+    match /users/{userId} {
+      // Allow users to read any profile (needed for tutor lookup)
+      // But only write to their own profile
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Tutor profiles
+    match /tutors/{tutorId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == tutorId;
+    }
+    
+    // Skills posted by tutors
+    match /skills/{skillId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Booking sessions
+    match /sessions/{sessionId} {
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || resource.data.tutorUid == request.auth.uid);
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (resource.data.userId == request.auth.uid || resource.data.tutorUid == request.auth.uid);
+    }
+    
+    // Messaging
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null && request.auth.uid in chatId.split('_');
+      
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+    
+    // Support for collectionGroup queries (for notifications)
+    match /{path=**}/messages/{messageId} {
+      allow read: if request.auth != null && (resource.data.receiverId == request.auth.uid || resource.data.senderId == request.auth.uid);
+    }
+  }
+}

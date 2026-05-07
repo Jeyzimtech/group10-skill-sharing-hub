@@ -39,6 +39,7 @@ class ChatService {
       'senderId': currentUserId,
       'receiverId': otherUserId,
       'text': text,
+      'type': text.contains("📞") ? "call" : "text",
       'timestamp': FieldValue.serverTimestamp(),
     };
 
@@ -50,6 +51,7 @@ class ChatService {
 
     await _firestore.collection('chats').doc(chatId).set({
       'lastMessage': text,
+      'lastMessageType': text.contains("📞") ? "call" : "text",
       'lastTimestamp': FieldValue.serverTimestamp(),
       'users': [currentUserId, otherUserId],
     }, SetOptions(merge: true));

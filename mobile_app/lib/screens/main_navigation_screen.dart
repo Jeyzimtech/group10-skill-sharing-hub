@@ -9,6 +9,7 @@ import 'chat_screen.dart';
 import 'ai_tutor_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'video_call_screen.dart';
 import '../utils/responsive.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -47,7 +48,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // Listen to messages where current user is receiver
     _messageSubscription = FirebaseFirestore.instance
         .collectionGroup('messages')
         .where('receiverId', isEqualTo: user.uid)
@@ -59,11 +59,121 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               final timestamp = data['timestamp'] as Timestamp?;
               
               if (timestamp != null && timestamp.toDate().isAfter(_startTime)) {
-                _showNewMessageNotification(data);
+                final type = data['type'] ?? 'text';
+                if (type == 'call') {
+                  _showIncomingCallDialog(data);
+                } else {
+                  _showNewMessageNotification(data);
+                }
               }
             }
           }
         });
+  }
+
+  void _showIncomingCallDialog(Map<String, dynamic> data) async {
+    final senderId = data['senderId'] as String;
+    final senderDoc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
+    final senderName = senderDoc.exists ? (senderDoc.data()?['name'] ?? 'Someone') : 'Someone';
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF122240),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5A0).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.videocam, color: Color(0xFF00E5A0), size: 40),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'INCOMING VIDEO CALL',
+              style: TextStyle(
+                color: const Color(0xFF00E5A0),
+                letterSpacing: 2,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              senderName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildCallAction(
+                  icon: Icons.close,
+                  color: Colors.redAccent,
+                  label: 'Decline',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildCallAction(
+                  icon: Icons.videocam,
+                  color: const Color(0xFF00E5A0),
+                  label: 'Accept',
+                  onTap: () {
+                    Navigator.pop(context);
+                    final String myId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                    final List<String> ids = [myId, senderId]..sort();
+                    final String channelName = ids.join('_');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VideoCallScreen(
+                          channelName: channelName,
+                          userName: senderName,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCallAction({required IconData icon, required Color color, required String label, required VoidCallback onTap}) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+      ],
+    );
   }
 
   void _showNewMessageNotification(Map<String, dynamic> data) async {
@@ -72,56 +182,68 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final senderId = data['senderId'] as String;
     final text = data['text'] as String;
 
-    // Fetch sender name
     final senderDoc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
     final senderName = senderDoc.exists ? (senderDoc.data()?['name'] ?? 'Someone') : 'Someone';
 
     if (!mounted) return;
 
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.chat_bubble, color: Color(0xFF00E5A0), size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'New message from $senderName',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    text,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        content: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF122240),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF00E5A0).withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00E5A0).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.chat_bubble_outline, color: Color(0xFF00E5A0), size: 20),
               ),
-            ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: 'REPLY',
-          textColor: const Color(0xFF00E5A0),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChatScreen(
-                  otherUserId: senderId,
-                  otherUserName: senderName,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Message from $senderName',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    Text(
+                      text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  _onTabTapped(2); // Go to messages tab
+                },
+                child: const Text('VIEW', style: TextStyle(color: Color(0xFF00E5A0), fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
         ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.only(bottom: 20, left: 10, right: 10),
       ),
     );
   }

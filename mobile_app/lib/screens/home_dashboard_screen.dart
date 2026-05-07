@@ -166,32 +166,35 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         // Avatar with online dot
         Stack(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cardBg,
-                image: photoUrl.isNotEmpty ? DecorationImage(
-                  image: NetworkImage(photoUrl),
-                  fit: BoxFit.cover,
-                ) : null,
-                border: Border.all(
-                  color: _accent.withValues(alpha: 0.3),
-                  width: 1.5,
+            Hero(
+              tag: 'profile_icon',
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cardBg,
+                  image: photoUrl.isNotEmpty ? DecorationImage(
+                    image: NetworkImage(photoUrl),
+                    fit: BoxFit.cover,
+                  ) : null,
+                  border: Border.all(
+                    color: _accent.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                    )
+                  ]
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                  )
-                ]
+                child: photoUrl.isEmpty ? Icon(
+                  Icons.person,
+                  color: textColor.withValues(alpha: 0.7),
+                  size: 26,
+                ) : null,
               ),
-              child: photoUrl.isEmpty ? Icon(
-                Icons.person,
-                color: textColor.withValues(alpha: 0.7),
-                size: 26,
-              ) : null,
             ),
             Positioned(
               bottom: 1,

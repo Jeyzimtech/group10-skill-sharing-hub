@@ -15,8 +15,9 @@ class ForgotPasswordForm extends StatefulWidget {
 }
 
 class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+  late AnimationController _staggeredController;
+  final List<Animation<double>> _fadeAnimations = [];
+  final List<Animation<Offset>> _slideAnimations = [];
 
   String _email = '';
   String? _emailError;
@@ -27,17 +28,35 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
+    _staggeredController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 1200),
     );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
-    _fadeController.forward();
+
+    for (int i = 0; i < 5; i++) {
+      double start = i * 0.1;
+      double end = (start + 0.4).clamp(0.0, 1.0);
+      
+      _fadeAnimations.add(CurvedAnimation(
+        parent: _staggeredController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      ));
+
+      _slideAnimations.add(Tween<Offset>(
+        begin: const Offset(0, 0.2),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: _staggeredController,
+        curve: Interval(start, end, curve: Curves.backOut),
+      )));
+    }
+
+    _staggeredController.forward();
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _staggeredController.dispose();
     super.dispose();
   }
 
@@ -60,6 +79,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         setState(() {
           _isLoading = false;
           _isSuccess = true;
+          _staggeredController.reset();
+          _staggeredController.forward();
         });
       }
     } on AuthException catch (e) {
@@ -69,18 +90,25 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
     }
   }
 
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnimations[index % _fadeAnimations.length],
+      child: SlideTransition(
+        position: _slideAnimations[index % _slideAnimations.length],
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: _isSuccess ? _buildSuccessState(textColor, subTextColor) : _buildFormState(textColor, subTextColor, isDark),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+      child: _isSuccess ? _buildSuccessState(textColor, subTextColor) : _buildFormState(textColor, subTextColor, isDark),
     );
   }
 
@@ -92,7 +120,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 20),
-          Container(
+          _animatedItem(0, Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
@@ -103,9 +131,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
               size: 64,
               color: AppColors.primary,
             ),
-          ),
+          )),
           const SizedBox(height: 32),
-          Text(
+          _animatedItem(1, Text(
             'CHECK YOUR EMAIL',
             style: TextStyle(
               fontSize: 20,
@@ -113,9 +141,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
               color: textColor,
               letterSpacing: 2,
             ),
-          ),
+          )),
           const SizedBox(height: 16),
-          Text(
+          _animatedItem(2, Text(
             'We have sent recovery instructions to\n$_email',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -123,16 +151,15 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
               color: subTextColor,
               height: 1.5,
             ),
-          ),
+          )),
           const SizedBox(height: 48),
-          CustomButton(
+          _animatedItem(3, CustomButton(
             text: 'BACK TO LOGIN',
             onPressed: widget.onBackTap,
-          ),
+          )),
         ],
       ),
     );
-
   }
 
   Widget _buildFormState(Color textColor, Color subTextColor, bool isDark) {
@@ -143,7 +170,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
+          _animatedItem(0, GestureDetector(
             onTap: widget.onBackTap,
             child: Container(
               padding: const EdgeInsets.all(10),
@@ -157,9 +184,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
                 size: 20,
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 24),
-          Center(
+          _animatedItem(1, Center(
             child: Text(
               'RESET PASSWORD',
               style: TextStyle(
@@ -169,9 +196,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
                 letterSpacing: 4.0,
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 12),
-          Center(
+          _animatedItem(2, Center(
             child: Text(
               'Enter your email to receive recovery instructions',
               textAlign: TextAlign.center,
@@ -181,9 +208,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
                 fontWeight: FontWeight.w400,
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 40),
-          CustomTextField(
+          _animatedItem(3, CustomTextField(
             label: 'Email',
             icon: Icons.mail,
             keyboardType: TextInputType.emailAddress,
@@ -194,15 +221,15 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
               _email = value;
               _validate();
             },
-          ),
+          )),
           const SizedBox(height: 40),
-          Center(
+          _animatedItem(4, Center(
             child: CustomButton(
               text: 'SEND INSTRUCTIONS',
               isLoading: _isLoading,
               onPressed: _isValid ? _submit : null,
             ),
-          ),
+          )),
           if (_serverError != null) ...[
             const SizedBox(height: 12),
             Center(
@@ -216,6 +243,5 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> with SingleTick
         ],
       ),
     );
-
   }
 }

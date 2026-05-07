@@ -33,12 +33,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     super.initState();
     _flipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _forgotController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _flipAnimation = Tween<double>(begin: 0, end: pi).animate(

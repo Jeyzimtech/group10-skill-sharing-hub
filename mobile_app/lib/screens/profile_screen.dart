@@ -151,14 +151,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildHeader(String name, String email, bool isTutor, String photoUrl, Color textColor, Color subTextColor, Color cardBg) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: _accent.withValues(alpha: 0.1),
-          backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-          child: photoUrl.isEmpty ? Text(
-            name.isNotEmpty ? name[0] : 'U',
-            style: TextStyle(color: _accent, fontSize: 40, fontWeight: FontWeight.bold),
-          ) : null,
+        Hero(
+          tag: 'profile_icon',
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: _accent.withValues(alpha: 0.1),
+            backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+            child: photoUrl.isEmpty ? Text(
+              name.isNotEmpty ? name[0] : 'U',
+              style: TextStyle(color: _accent, fontSize: 40, fontWeight: FontWeight.bold),
+            ) : null,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
